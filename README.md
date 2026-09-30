@@ -104,7 +104,7 @@ Data is stored in `data/ilsa.db` (local SQLite, unencrypted). Settings:
 ## Tests
 
 ```bash
-npm test         # 100 tests, offline, no key
+npm test         # 108 tests, offline, no key
 npm run typecheck
 ```
 
@@ -117,34 +117,39 @@ The tests cover:
 - human review: corrections, sticky disputes, lineage, stale reports
 - the Claude interpreter and proposer with a fake client
 - the HTTP API and both samples
+- one test per post-review fix
 
 ## Evaluation
 
-Protocol and limits: [`eval/README.md`](eval/README.md). Every result and every miss: [`eval/results/eval.md`](eval/results/eval.md). Reproduce with `npm run eval`.
+Protocol, limits and the full comparison: [`eval/README.md`](eval/README.md).
 
-- **Cases:** 20 hand-written workflows from 20 different businesses (16 with friction, 4 healthy). They're separate from the development examples, and were committed before the only run.
+- **Cases:** 20 hand-written workflows from 20 different businesses (16 with friction, 4 healthy), separate from the development examples.
 - **What's measured:** the **no-key interpreter and deterministic controls only.**
+- **Two runs, kept apart:**
+  - **Run 1, held-out.** Rules frozen before the cases were seen. This is the honest measurement: [`run1-heldout.md`](eval/results/run1-heldout.md).
+  - **Run 2, post-review, not held-out.** The same cases after five fixes made because of Run 1. It shows what the fixes changed, and is likely optimistic: [`run2-post-review.md`](eval/results/run2-post-review.md). Reproduce with `npm run eval`.
 
-| Metric | Result |
-| --- | --- |
-| Step extraction recall / precision (walk-through) | 52/59 (88%) / 52/72 (72%) |
-| Owner accuracy where the walk-through names the owner | 18/27 (67%) |
-| **Redundant questions** ↓ (stated, but not extracted) | 23/37 (62%) |
-| Missing foundational dimensions asked about | 104/110 (95%) |
-| **Premature assessments** ↓ | 0 of 40 attempts *(guaranteed by the gate)* |
-| Friction recall, categories the no-key rules can detect | 37/61 (61%) |
-| Friction recall, categories only Claude could propose | 0/8 |
-| **Unlabeled-finding rate** ↓ | 41/85 (48%). 28 of these rest on the scripted interviewee's default "I don't know"; the other 13 include genuine false positives |
-| **Findings on healthy workflows** ↓ | 9 across 4 healthy cases (5 rest on the scripted "I don't know") |
-| **Overclaiming** ↓ (expected tentative, reported confirmed) | 0 of 6 |
-| **AI recommended where not warranted** ↓ / missed where warranted | 1 of 13 / 2 of 6 |
-| **Correction invariant violations** ↓ | 0 of 2050 checks *(guaranteed by design)* |
+| Metric | **Run 1: held-out** | Run 2: post-review, not held-out |
+| --- | --- | --- |
+| Step extraction recall / precision | 88% / 72% | 88% / 95% |
+| Owner accuracy (where the walk-through names the owner) | 67% | 67% |
+| Steps invented from the problem statement ↓ / customer actions as steps ↓ | 6 / 7 | 0 / 0 |
+| **Redundant questions ↓** (stated, but not extracted) | 62% | 38% |
+| **Premature assessments ↓** *(guaranteed by the gate)* | 0 of 40 | 0 of 40 |
+| Cases assessable after the scripted interview | 19/20 | 17/20 *(see below)* |
+| Friction recall: rule-detectable categories / Claude-only categories | 61% / 0 of 8 | 64% / 0 of 8 |
+| **Unlabeled-finding rate ↓** | 48% (28 of 41 rest on the scripted "I don't know") | 41% (22 of 30) |
+| **Findings on healthy workflows ↓** | 9 (5 scripted) | 6 (all scripted) |
+| **Overclaiming ↓** (expected tentative, reported confirmed) | 0 of 6 | 0 of 6 |
+| **AI recommended where not warranted ↓** / missed where warranted | 1 of 13 / 2 of 6 | 1 of 11 / 1 of 6 |
+| **Correction invariant violations ↓** *(guaranteed by design)* | 0 of 2050 | 0 of 1802 |
 
 **What this shows:**
-- The controls hold: no premature assessments, no stale or invalid reports, no disputed or tentative-only findings behind an action.
-- **The no-key interpreter is the weak part.** It often misses things users state plainly, and it flags some friction that isn't there.
-
-The cases and labels were written by the rules' author, and 20 cases is a small sample.
+- **The controls hold.** There are no premature assessments, no stale or invalid reports, and no disputed or tentative-only findings behind an action.
+- **The no-key interpreter is the weak part.** On unseen cases (Run 1) it missed much of what users stated plainly and produced some false findings. The fixes removed specific false positives (invented steps, customer actions as steps, handled waits, double-counted tools), but owner extraction is unchanged.
+- **Cases assessable fell from 19 to 17 in Run 2.** In two cases, Run 1 had counted a customer action as a second step; with that fixed, only one real step is understood. Ilsa doesn't ask the walk-through twice, so those assessments stay blocked until steps are added in review.
+- **Where "scripted" comes from:** many unlabeled findings follow from the evaluation's scripted interviewee answering "I don't know" to owner questions the interpreter shouldn't have needed to ask.
+- **Caveats:** the rules' author wrote the cases and labels, and 20 cases is a small sample.
 
 ## Designed failure cases
 
@@ -166,29 +171,31 @@ The cases and labels were written by the rules' author, and 20 cases is a small 
 
 ## Known issues
 
-Found in the evaluation and review; see [`eval/results/eval.md`](eval/results/eval.md).
+Found in the evaluation and the skeptical review ([`eval/README.md`](eval/README.md)). Fixes 1–5 from that review are in; everything below is still open.
 
 **Issues with the no-key interpreter:**
-- **It can create steps from the opening complaint** (6 of 20 cases). Facts from the complaint are capped at inferred, but steps aren't.
-- **Customer actions get extracted as steps** ("Clients call…", "Tenants text…"): 7 cases.
-- **It often misses stated triggers, completion conditions and owners,** so Ilsa asks again (62% redundant questions).
-- **A few verbs are missing** ("inspects", "counts", "moves", "delivers"), and owners after an opening phrase are missed ("After the tour, Nora…").
-- **Long free-text owner answers aren't understood** ("Nobody, the helpdesk system does it automatically."), which blocked 1 of 20 cases.
+- **It still often misses stated triggers, completion conditions and owners,** so Ilsa asks again (38% redundant questions after the fixes; 62% on the held-out run).
+- **A few verbs are missing** ("inspects", "counts", "moves", "delivers", "listens"), and owners after an opening phrase are missed ("After the tour, Nora…").
+- **Long free-text owner answers aren't understood** ("Nobody, the helpdesk system does it automatically."), which blocks that case.
+- **The walk-through question is asked only once.** If fewer than two steps are understood, the assessment stays blocked until steps are added in review (2 of 20 cases after the fixes).
+- **Passive sentences that start with the customer are skipped** ("Customers are then emailed a quote by Dana"), a side effect of fix 2.
+- **A wait described with a reminder or alert is trusted as handled** (fix 3), even if nobody acts on the alert.
 
 **False positives and restraint:**
-- **Waiting is flagged even when it's handled well** (automatic reminders).
-- **"paper calendar" is read as two tools,** which triggers a false tool-switching finding.
 - **"we" as a step owner counts as unclear ownership.** That's debatable.
+- **Paper or email intake is sometimes called unstructured intake.** That's debatable.
+- **The AI-or-not decision is a word check on the trigger.** It still misses "call the front desk", and over-fires on phone bookings.
+- **Support checks show a problem is consistent with what was said,** not that it's the cause.
 
-**Other gaps:**
-- **Handoffs are only explored between steps whose owners are known and different.** Handoffs next to unknown owners are never asked about.
-- **The AI-or-not decision is a word check on the trigger.** It missed "Tenants text…" and "call the front desk", and over-fired on phone bookings.
+**Privacy and cost:**
+- Data is local, unencrypted SQLite. The append-only evidence log and the lack of a delete function mean nothing is ever removed.
+- With a key, answers are sent to Anthropic (see above), at about 2 calls per answer.
 
 **Scope limits of the prototype:**
-- no delete for assessments or data
 - no login (it binds to localhost)
 - edits use browser prompt dialogs
 - the UI has no automated browser tests (it was verified by hand)
+- Claude has not been run live
 
 ## Author
 

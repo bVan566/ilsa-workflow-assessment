@@ -1,6 +1,8 @@
 // Evaluation of the no-key interpreter and the deterministic control path.
 //   node eval/run.ts        (or: npm run eval)
-// Reads eval/cases.json, writes eval/results/eval.md and eval/results/eval.json.
+// Reads eval/cases.json, writes eval/results/run2-post-review.md and .json.
+// Run 1 (the original held-out result, before the post-review fixes) is kept in
+// eval/results/run1-heldout.md; reproduce it with: git checkout 347540c && npm run eval
 // No network. Claude is not evaluated.
 
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -302,8 +304,9 @@ const corrChecks = sum((r) => r.corrections?.checks ?? 0);
 const corrViol = results.flatMap((r) => (r.corrections?.violations ?? []).map((v) => `${r.id} ${v}`));
 
 const L: string[] = [];
-L.push('# Evaluation results', '');
-L.push(`20 hand-written cases (16 with friction, ${S.healthy_cases} healthy), single run of the frozen no-key interpreter and deterministic controls. **Claude is not evaluated.** ↑ higher is better, ↓ lower is better.`, '');
+L.push('# Evaluation results: Run 2 (post-review, NOT held-out)', '');
+L.push('> Same 20 cases as Run 1, after five fixes made in response to Run 1 (see eval/README.md). The cases had already been seen, so this is **not** a held-out result: it shows the effect of the fixes on known cases, and is likely optimistic. The original held-out result is [run1-heldout.md](run1-heldout.md).', '');
+L.push(`20 hand-written cases (16 with friction, ${S.healthy_cases} healthy), no-key interpreter and deterministic controls. **Claude is not evaluated.** ↑ higher is better, ↓ lower is better.`, '');
 L.push('## Summary', '', '| Area | Metric | Result |', '| --- | --- | --- |');
 L.push(`| Step extraction (walk-through only) | Recall ↑ (labeled steps found) | ${pct(S.steps_matched, S.steps_expected)} |`);
 L.push(`| | Precision ↑ (extracted steps that are labeled steps) | ${pct(S.steps_matched, S.steps_extracted)} |`);
@@ -362,6 +365,6 @@ for (const r of results) {
 if (corrViol.length === 0) L.push('No correction/regeneration invariant was violated.', '');
 
 mkdirSync(join(DIR, 'results'), { recursive: true });
-writeFileSync(join(DIR, 'results', 'eval.md'), L.join('\n') + '\n');
-writeFileSync(join(DIR, 'results', 'eval.json'), JSON.stringify({ summary: S, results }, null, 2) + '\n');
+writeFileSync(join(DIR, 'results', 'run2-post-review.md'), L.join('\n') + '\n');
+writeFileSync(join(DIR, 'results', 'run2-post-review.json'), JSON.stringify({ run: 'run2-post-review', summary: S, results }, null, 2) + '\n');
 console.log(L.slice(0, 32).join('\n'));

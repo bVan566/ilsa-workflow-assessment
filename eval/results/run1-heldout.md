@@ -1,3 +1,5 @@
+> **Run 1: original held-out result.** Generated at commit `c0260a7`, before the post-review fixes. The cases were committed before this run and had not been seen while building the rules. The content below this note is unchanged. For the post-review result, see [run2-post-review.md](run2-post-review.md). Reproduce: `git checkout c0260a7 && npm run eval` (it writes `eval/results/eval.md` in that version).
+
 # Evaluation results
 
 20 hand-written cases (16 with friction, 4 healthy), single run of the frozen no-key interpreter and deterministic controls. **Claude is not evaluated.** ↑ higher is better, ↓ lower is better.

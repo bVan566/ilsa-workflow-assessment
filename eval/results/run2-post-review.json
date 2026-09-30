@@ -1,0 +1,1728 @@
+{
+  "run": "run2-post-review",
+  "summary": {
+    "steps_expected": 59,
+    "steps_matched": 52,
+    "steps_extracted": 55,
+    "owner_labeled": 27,
+    "owner_ok": 18,
+    "not_steps": 0,
+    "stated": 37,
+    "redundant": 14,
+    "needed": 101,
+    "addressed": 98,
+    "clarified_first": 20,
+    "invented": 0,
+    "premature": 0,
+    "assessable": 17,
+    "f_expected": 69,
+    "f_found": 39,
+    "live": 73,
+    "unlabeled": 30,
+    "relinked": 73,
+    "healthy_findings": 6,
+    "healthy_cases": 4,
+    "unlabeled_artifact": 22,
+    "healthy_artifact": 6,
+    "f_expected_rule": 61,
+    "f_found_rule": 39
+  },
+  "results": [
+    {
+      "id": "ev-01",
+      "domain": "Dental clinic, appointment requests",
+      "healthy": false,
+      "clarified_first": true,
+      "invented_steps_from_problem": 0,
+      "premature": {
+        "problem": false,
+        "walkthrough": false
+      },
+      "steps": {
+        "expected": 3,
+        "matched": 2,
+        "extracted": 2,
+        "owner_labeled": 0,
+        "owner_ok": 0,
+        "missed": [
+          "listens to the voicemails"
+        ],
+        "not_steps": [],
+        "extra": [],
+        "owner_misses": []
+      },
+      "redundant": [
+        "exceptions"
+      ],
+      "stated": 2,
+      "clarification": {
+        "needed": [
+          "steps",
+          "trigger",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ],
+        "addressed": [
+          "steps",
+          "trigger",
+          "ownership",
+          "exceptions",
+          "completion"
+        ]
+      },
+      "questions": 10,
+      "assessable": true,
+      "blockers": [],
+      "findings": {
+        "expected": 4,
+        "found": 2,
+        "missed": [
+          "missing_exception_handling (confirmed)",
+          "manual_reentry (confirmed)"
+        ],
+        "unlabeled": [],
+        "unlabeled_artifact": 0,
+        "healthy_artifact": 0,
+        "status": [
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "waiting_dependency"
+          },
+          {
+            "expected": "confirmed",
+            "got": "tentative",
+            "category": "unstructured_intake"
+          }
+        ],
+        "relinked_ok": 2,
+        "live": 2,
+        "expected_rule_detectable": 4,
+        "found_rule_detectable": 2
+      },
+      "recs": {
+        "ai": true,
+        "ai_warranted": true,
+        "count": 3,
+        "investigate": 2,
+        "validator_errors": [],
+        "act_on_tentative": 0
+      },
+      "corrections": {
+        "checks": 109,
+        "violations": []
+      }
+    },
+    {
+      "id": "ev-02",
+      "domain": "Landscaping, quote requests",
+      "healthy": false,
+      "clarified_first": true,
+      "invented_steps_from_problem": 0,
+      "premature": {
+        "problem": false,
+        "walkthrough": false
+      },
+      "steps": {
+        "expected": 4,
+        "matched": 3,
+        "extracted": 3,
+        "owner_labeled": 1,
+        "owner_ok": 1,
+        "missed": [
+          "measures the yard"
+        ],
+        "not_steps": [],
+        "extra": [],
+        "owner_misses": []
+      },
+      "redundant": [],
+      "stated": 1,
+      "clarification": {
+        "needed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ],
+        "addressed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ]
+      },
+      "questions": 11,
+      "assessable": true,
+      "blockers": [],
+      "findings": {
+        "expected": 6,
+        "found": 5,
+        "missed": [
+          "manual_reentry (confirmed)"
+        ],
+        "unlabeled": [],
+        "unlabeled_artifact": 0,
+        "healthy_artifact": 0,
+        "status": [
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "unclear_ownership"
+          },
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "missing_exception_handling"
+          },
+          {
+            "expected": "confirmed",
+            "got": "tentative",
+            "category": "missing_terminal_condition"
+          },
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "information_loss"
+          },
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "waiting_dependency"
+          }
+        ],
+        "relinked_ok": 6,
+        "live": 6,
+        "expected_rule_detectable": 6,
+        "found_rule_detectable": 5
+      },
+      "recs": {
+        "ai": false,
+        "ai_warranted": false,
+        "count": 6,
+        "investigate": 2,
+        "validator_errors": [],
+        "act_on_tentative": 0
+      },
+      "corrections": {
+        "checks": 114,
+        "violations": []
+      }
+    },
+    {
+      "id": "ev-03",
+      "domain": "Bakery, custom cake orders",
+      "healthy": false,
+      "clarified_first": true,
+      "invented_steps_from_problem": 0,
+      "premature": {
+        "problem": false,
+        "walkthrough": false
+      },
+      "steps": {
+        "expected": 2,
+        "matched": 2,
+        "extracted": 2,
+        "owner_labeled": 2,
+        "owner_ok": 1,
+        "missed": [],
+        "not_steps": [],
+        "extra": [],
+        "owner_misses": [
+          "\"checks the order book\": expected Priya, got unknown"
+        ]
+      },
+      "redundant": [
+        "completion"
+      ],
+      "stated": 2,
+      "clarification": {
+        "needed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ],
+        "addressed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ]
+      },
+      "questions": 10,
+      "assessable": true,
+      "blockers": [],
+      "findings": {
+        "expected": 5,
+        "found": 3,
+        "missed": [
+          "manual_reentry (confirmed)",
+          "missing_exception_handling (confirmed)"
+        ],
+        "unlabeled": [
+          "unclear_ownership [confirmed] S2: asked who owns S2; the user did not know (rests on the scripted \"I don't know.\")"
+        ],
+        "unlabeled_artifact": 1,
+        "healthy_artifact": 0,
+        "status": [
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "unstructured_intake"
+          },
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "manual_status_checking"
+          },
+          {
+            "expected": "tentative",
+            "got": "tentative",
+            "category": "waiting_dependency"
+          }
+        ],
+        "relinked_ok": 4,
+        "live": 4,
+        "expected_rule_detectable": 5,
+        "found_rule_detectable": 3
+      },
+      "recs": {
+        "ai": true,
+        "ai_warranted": true,
+        "count": 5,
+        "investigate": 1,
+        "validator_errors": [],
+        "act_on_tentative": 0
+      },
+      "corrections": {
+        "checks": 109,
+        "violations": []
+      }
+    },
+    {
+      "id": "ev-04",
+      "domain": "Accounting firm, new client onboarding",
+      "healthy": false,
+      "clarified_first": true,
+      "invented_steps_from_problem": 0,
+      "premature": {
+        "problem": false,
+        "walkthrough": false
+      },
+      "steps": {
+        "expected": 3,
+        "matched": 3,
+        "extracted": 3,
+        "owner_labeled": 3,
+        "owner_ok": 2,
+        "missed": [],
+        "not_steps": [],
+        "extra": [],
+        "owner_misses": [
+          "\"approves the file\": expected partner, got unknown"
+        ]
+      },
+      "redundant": [
+        "waiting"
+      ],
+      "stated": 2,
+      "clarification": {
+        "needed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ],
+        "addressed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ]
+      },
+      "questions": 12,
+      "assessable": true,
+      "blockers": [],
+      "findings": {
+        "expected": 2,
+        "found": 1,
+        "missed": [
+          "manual_reentry (confirmed)"
+        ],
+        "unlabeled": [
+          "unclear_ownership [confirmed] S3: asked who owns S3; the user did not know (rests on the scripted \"I don't know.\")",
+          "unstructured_intake [confirmed] S1: work arrives by email and is re-keyed by hand later"
+        ],
+        "unlabeled_artifact": 1,
+        "healthy_artifact": 0,
+        "status": [
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "waiting_dependency"
+          }
+        ],
+        "relinked_ok": 3,
+        "live": 3,
+        "expected_rule_detectable": 2,
+        "found_rule_detectable": 1
+      },
+      "recs": {
+        "ai": false,
+        "ai_warranted": false,
+        "count": 3,
+        "investigate": 0,
+        "validator_errors": [],
+        "act_on_tentative": 0
+      },
+      "corrections": {
+        "checks": 97,
+        "violations": []
+      }
+    },
+    {
+      "id": "ev-05",
+      "domain": "Small office IT helpdesk (healthy)",
+      "healthy": true,
+      "clarified_first": true,
+      "invented_steps_from_problem": 0,
+      "premature": {
+        "problem": false,
+        "walkthrough": false
+      },
+      "steps": {
+        "expected": 3,
+        "matched": 3,
+        "extracted": 3,
+        "owner_labeled": 2,
+        "owner_ok": 1,
+        "missed": [],
+        "not_steps": [],
+        "extra": [],
+        "owner_misses": [
+          "\"marks the ticket resolved\": expected Sam, got unknown"
+        ]
+      },
+      "redundant": [
+        "completion",
+        "ownership"
+      ],
+      "stated": 3,
+      "clarification": {
+        "needed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ],
+        "addressed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ]
+      },
+      "questions": 13,
+      "assessable": false,
+      "blockers": [
+        "S1.owner: uninterpreted"
+      ],
+      "findings": {
+        "expected": 0,
+        "found": 0,
+        "missed": [],
+        "unlabeled": [
+          "unclear_ownership [confirmed] S3: asked who owns S3; the user did not know (rests on the scripted \"I don't know.\")"
+        ],
+        "unlabeled_artifact": 1,
+        "healthy_artifact": 1,
+        "status": [],
+        "relinked_ok": 1,
+        "live": 1,
+        "expected_rule_detectable": 0,
+        "found_rule_detectable": 0
+      },
+      "recs": null,
+      "corrections": null
+    },
+    {
+      "id": "ev-06",
+      "domain": "Auto repair shop, estimates",
+      "healthy": false,
+      "clarified_first": true,
+      "invented_steps_from_problem": 0,
+      "premature": {
+        "problem": false,
+        "walkthrough": false
+      },
+      "steps": {
+        "expected": 3,
+        "matched": 2,
+        "extracted": 2,
+        "owner_labeled": 0,
+        "owner_ok": 0,
+        "missed": [
+          "inspects the car"
+        ],
+        "not_steps": [],
+        "extra": [],
+        "owner_misses": []
+      },
+      "redundant": [],
+      "stated": 1,
+      "clarification": {
+        "needed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ],
+        "addressed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ]
+      },
+      "questions": 10,
+      "assessable": true,
+      "blockers": [],
+      "findings": {
+        "expected": 5,
+        "found": 2,
+        "missed": [
+          "repeated_customer_followup (confirmed)",
+          "manual_reentry (confirmed)",
+          "missing_exception_handling (confirmed)"
+        ],
+        "unlabeled": [
+          "unclear_ownership [confirmed] S1: asked who owns S1; the user did not know (rests on the scripted \"I don't know.\")",
+          "unclear_ownership [confirmed] S2: asked who owns S2; the user did not know (rests on the scripted \"I don't know.\")",
+          "unstructured_intake [confirmed] S1: work arrives by paper or whiteboard and is re-keyed by hand later"
+        ],
+        "unlabeled_artifact": 2,
+        "healthy_artifact": 0,
+        "status": [
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "information_loss"
+          },
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "waiting_dependency"
+          }
+        ],
+        "relinked_ok": 5,
+        "live": 5,
+        "expected_rule_detectable": 4,
+        "found_rule_detectable": 2
+      },
+      "recs": {
+        "ai": false,
+        "ai_warranted": false,
+        "count": 4,
+        "investigate": 0,
+        "validator_errors": [],
+        "act_on_tentative": 0
+      },
+      "corrections": {
+        "checks": 97,
+        "violations": []
+      }
+    },
+    {
+      "id": "ev-07",
+      "domain": "Property management, maintenance requests",
+      "healthy": false,
+      "clarified_first": true,
+      "invented_steps_from_problem": 0,
+      "premature": {
+        "problem": false,
+        "walkthrough": false
+      },
+      "steps": {
+        "expected": 3,
+        "matched": 3,
+        "extracted": 3,
+        "owner_labeled": 2,
+        "owner_ok": 0,
+        "missed": [],
+        "not_steps": [],
+        "extra": [],
+        "owner_misses": [
+          "\"schedules a visit\": expected contractor, got unknown",
+          "\"sends an invoice\": expected contractor, got unknown"
+        ]
+      },
+      "redundant": [
+        "completion"
+      ],
+      "stated": 2,
+      "clarification": {
+        "needed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ],
+        "addressed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ]
+      },
+      "questions": 13,
+      "assessable": true,
+      "blockers": [],
+      "findings": {
+        "expected": 5,
+        "found": 4,
+        "missed": [
+          "repeated_customer_followup (confirmed)"
+        ],
+        "unlabeled": [
+          "unclear_ownership [confirmed] S2: asked who owns S2; the user did not know (rests on the scripted \"I don't know.\")",
+          "unclear_ownership [confirmed] S3: asked who owns S3; the user did not know (rests on the scripted \"I don't know.\")"
+        ],
+        "unlabeled_artifact": 2,
+        "healthy_artifact": 0,
+        "status": [
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "information_loss"
+          },
+          {
+            "expected": "confirmed",
+            "got": "tentative",
+            "category": "unstructured_intake"
+          },
+          {
+            "expected": "tentative",
+            "got": "tentative",
+            "category": "missing_terminal_condition"
+          },
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "waiting_dependency"
+          }
+        ],
+        "relinked_ok": 7,
+        "live": 7,
+        "expected_rule_detectable": 4,
+        "found_rule_detectable": 4
+      },
+      "recs": {
+        "ai": true,
+        "ai_warranted": true,
+        "count": 7,
+        "investigate": 4,
+        "validator_errors": [],
+        "act_on_tentative": 0
+      },
+      "corrections": {
+        "checks": 118,
+        "violations": []
+      }
+    },
+    {
+      "id": "ev-08",
+      "domain": "Catering, event inquiries",
+      "healthy": false,
+      "clarified_first": true,
+      "invented_steps_from_problem": 0,
+      "premature": {
+        "problem": false,
+        "walkthrough": false
+      },
+      "steps": {
+        "expected": 2,
+        "matched": 2,
+        "extracted": 3,
+        "owner_labeled": 1,
+        "owner_ok": 1,
+        "missed": [],
+        "not_steps": [],
+        "extra": [
+          "Nobody tracks which quotes were accepted"
+        ],
+        "owner_misses": []
+      },
+      "redundant": [
+        "waiting",
+        "completion"
+      ],
+      "stated": 3,
+      "clarification": {
+        "needed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ],
+        "addressed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ]
+      },
+      "questions": 10,
+      "assessable": true,
+      "blockers": [],
+      "findings": {
+        "expected": 5,
+        "found": 3,
+        "missed": [
+          "missing_terminal_condition (confirmed)",
+          "tool_switching (confirmed)"
+        ],
+        "unlabeled": [
+          "unclear_ownership [confirmed] S3: asked who owns S3; the user did not know (rests on the scripted \"I don't know.\")",
+          "information_loss [tentative] S2,S3: asked how work reaches S3; the user did not know (rests on the scripted \"I don't know.\")"
+        ],
+        "unlabeled_artifact": 2,
+        "healthy_artifact": 0,
+        "status": [
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "missing_exception_handling"
+          },
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "waiting_dependency"
+          },
+          {
+            "expected": "confirmed",
+            "got": "tentative",
+            "category": "unstructured_intake"
+          }
+        ],
+        "relinked_ok": 5,
+        "live": 5,
+        "expected_rule_detectable": 5,
+        "found_rule_detectable": 3
+      },
+      "recs": {
+        "ai": true,
+        "ai_warranted": true,
+        "count": 6,
+        "investigate": 3,
+        "validator_errors": [],
+        "act_on_tentative": 0
+      },
+      "corrections": {
+        "checks": 111,
+        "violations": []
+      }
+    },
+    {
+      "id": "ev-09",
+      "domain": "Law firm, potential client intake",
+      "healthy": false,
+      "clarified_first": true,
+      "invented_steps_from_problem": 0,
+      "premature": {
+        "problem": false,
+        "walkthrough": false
+      },
+      "steps": {
+        "expected": 4,
+        "matched": 4,
+        "extracted": 4,
+        "owner_labeled": 2,
+        "owner_ok": 1,
+        "missed": [],
+        "not_steps": [],
+        "extra": [],
+        "owner_misses": [
+          "\"checks the website inquiries\": expected paralegal, got unknown"
+        ]
+      },
+      "redundant": [],
+      "stated": 2,
+      "clarification": {
+        "needed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ],
+        "addressed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ]
+      },
+      "questions": 13,
+      "assessable": true,
+      "blockers": [],
+      "findings": {
+        "expected": 5,
+        "found": 5,
+        "missed": [],
+        "unlabeled": [
+          "unclear_ownership [confirmed] S2: asked who owns S2; the user did not know (rests on the scripted \"I don't know.\")"
+        ],
+        "unlabeled_artifact": 1,
+        "healthy_artifact": 0,
+        "status": [
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "manual_status_checking"
+          },
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "tool_switching"
+          },
+          {
+            "expected": "tentative",
+            "got": "tentative",
+            "category": "missing_terminal_condition"
+          },
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "waiting_dependency"
+          },
+          {
+            "expected": "confirmed",
+            "got": "tentative",
+            "category": "unstructured_intake"
+          }
+        ],
+        "relinked_ok": 7,
+        "live": 7,
+        "expected_rule_detectable": 5,
+        "found_rule_detectable": 5
+      },
+      "recs": {
+        "ai": false,
+        "ai_warranted": true,
+        "count": 6,
+        "investigate": 2,
+        "validator_errors": [],
+        "act_on_tentative": 0
+      },
+      "corrections": {
+        "checks": 114,
+        "violations": []
+      }
+    },
+    {
+      "id": "ev-10",
+      "domain": "Gym, membership cancellations",
+      "healthy": false,
+      "clarified_first": true,
+      "invented_steps_from_problem": 0,
+      "premature": {
+        "problem": false,
+        "walkthrough": false
+      },
+      "steps": {
+        "expected": 2,
+        "matched": 1,
+        "extracted": 1,
+        "owner_labeled": 1,
+        "owner_ok": 1,
+        "missed": [
+          "cancels the membership"
+        ],
+        "not_steps": [],
+        "extra": [],
+        "owner_misses": []
+      },
+      "redundant": [],
+      "stated": 1,
+      "clarification": {
+        "needed": [
+          "steps",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ],
+        "addressed": [
+          "steps",
+          "exceptions",
+          "completion"
+        ]
+      },
+      "questions": 5,
+      "assessable": false,
+      "blockers": [
+        "sequence: too_few_steps"
+      ],
+      "findings": {
+        "expected": 4,
+        "found": 1,
+        "missed": [
+          "bottleneck (confirmed)",
+          "repeated_customer_followup (confirmed)",
+          "missing_exception_handling (confirmed)"
+        ],
+        "unlabeled": [
+          "unstructured_intake [tentative] S1: work arrives by email"
+        ],
+        "unlabeled_artifact": 0,
+        "healthy_artifact": 0,
+        "status": [
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "waiting_dependency"
+          }
+        ],
+        "relinked_ok": 2,
+        "live": 2,
+        "expected_rule_detectable": 2,
+        "found_rule_detectable": 1
+      },
+      "recs": null,
+      "corrections": null
+    },
+    {
+      "id": "ev-11",
+      "domain": "Print shop, proof approvals",
+      "healthy": false,
+      "clarified_first": true,
+      "invented_steps_from_problem": 0,
+      "premature": {
+        "problem": false,
+        "walkthrough": false
+      },
+      "steps": {
+        "expected": 3,
+        "matched": 3,
+        "extracted": 4,
+        "owner_labeled": 2,
+        "owner_ok": 1,
+        "missed": [],
+        "not_steps": [],
+        "extra": [
+          "We wait for the customer to reply with approval"
+        ],
+        "owner_misses": [
+          "\"sends the job\": expected Kim, got unknown"
+        ]
+      },
+      "redundant": [
+        "completion"
+      ],
+      "stated": 3,
+      "clarification": {
+        "needed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ],
+        "addressed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ]
+      },
+      "questions": 13,
+      "assessable": true,
+      "blockers": [],
+      "findings": {
+        "expected": 1,
+        "found": 1,
+        "missed": [],
+        "unlabeled": [
+          "unclear_ownership [confirmed] S2: S2 owner is \"we (no specific person)\"",
+          "information_loss [tentative] S1,S2: asked how work reaches S2; the user did not know (rests on the scripted \"I don't know.\")",
+          "unclear_ownership [confirmed] S3: asked who owns S3; the user did not know (rests on the scripted \"I don't know.\")",
+          "unclear_ownership [confirmed] S4: asked who owns S4; the user did not know (rests on the scripted \"I don't know.\")",
+          "unstructured_intake [tentative] S1: work arrives by email"
+        ],
+        "unlabeled_artifact": 3,
+        "healthy_artifact": 0,
+        "status": [
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "waiting_dependency"
+          }
+        ],
+        "relinked_ok": 6,
+        "live": 6,
+        "expected_rule_detectable": 1,
+        "found_rule_detectable": 1
+      },
+      "recs": {
+        "ai": false,
+        "ai_warranted": false,
+        "count": 4,
+        "investigate": 2,
+        "validator_errors": [],
+        "act_on_tentative": 0
+      },
+      "corrections": {
+        "checks": 110,
+        "violations": []
+      }
+    },
+    {
+      "id": "ev-12",
+      "domain": "HVAC company, service calls (hedged answers)",
+      "healthy": false,
+      "clarified_first": true,
+      "invented_steps_from_problem": 0,
+      "premature": {
+        "problem": false,
+        "walkthrough": false
+      },
+      "steps": {
+        "expected": 3,
+        "matched": 3,
+        "extracted": 4,
+        "owner_labeled": 2,
+        "owner_ok": 2,
+        "missed": [],
+        "not_steps": [],
+        "extra": [
+          "I think most calls come in through the answering service"
+        ],
+        "owner_misses": []
+      },
+      "redundant": [],
+      "stated": 1,
+      "clarification": {
+        "needed": [
+          "steps",
+          "trigger",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ],
+        "addressed": [
+          "steps",
+          "trigger",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ]
+      },
+      "questions": 20,
+      "assessable": true,
+      "blockers": [],
+      "findings": {
+        "expected": 4,
+        "found": 3,
+        "missed": [
+          "missing_exception_handling (tentative)"
+        ],
+        "unlabeled": [
+          "unclear_ownership [confirmed] S1: asked who owns S1; the user did not know (rests on the scripted \"I don't know.\")",
+          "unclear_ownership [confirmed] S2: asked who owns S2; the user did not know (rests on the scripted \"I don't know.\")",
+          "information_loss [tentative] S1,S2: asked how work reaches S2; the user did not know (rests on the scripted \"I don't know.\")"
+        ],
+        "unlabeled_artifact": 3,
+        "healthy_artifact": 0,
+        "status": [
+          {
+            "expected": "tentative",
+            "got": "tentative",
+            "category": "missing_terminal_condition"
+          },
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "manual_status_checking"
+          },
+          {
+            "expected": "tentative",
+            "got": "tentative",
+            "category": "waiting_dependency"
+          }
+        ],
+        "relinked_ok": 6,
+        "live": 6,
+        "expected_rule_detectable": 4,
+        "found_rule_detectable": 3
+      },
+      "recs": {
+        "ai": false,
+        "ai_warranted": false,
+        "count": 5,
+        "investigate": 3,
+        "validator_errors": [],
+        "act_on_tentative": 0
+      },
+      "corrections": {
+        "checks": 114,
+        "violations": []
+      }
+    },
+    {
+      "id": "ev-13",
+      "domain": "Design studio, project requests (healthy)",
+      "healthy": true,
+      "clarified_first": true,
+      "invented_steps_from_problem": 0,
+      "premature": {
+        "problem": false,
+        "walkthrough": false
+      },
+      "steps": {
+        "expected": 2,
+        "matched": 1,
+        "extracted": 1,
+        "owner_labeled": 0,
+        "owner_ok": 0,
+        "missed": [
+          "moves the card to Done"
+        ],
+        "not_steps": [],
+        "extra": [],
+        "owner_misses": []
+      },
+      "redundant": [
+        "completion",
+        "ownership"
+      ],
+      "stated": 3,
+      "clarification": {
+        "needed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ],
+        "addressed": [
+          "steps",
+          "ownership",
+          "exceptions",
+          "completion"
+        ]
+      },
+      "questions": 7,
+      "assessable": false,
+      "blockers": [
+        "sequence: too_few_steps"
+      ],
+      "findings": {
+        "expected": 0,
+        "found": 0,
+        "missed": [],
+        "unlabeled": [],
+        "unlabeled_artifact": 0,
+        "healthy_artifact": 0,
+        "status": [],
+        "relinked_ok": 0,
+        "live": 0,
+        "expected_rule_detectable": 0,
+        "found_rule_detectable": 0
+      },
+      "recs": null,
+      "corrections": null
+    },
+    {
+      "id": "ev-14",
+      "domain": "Restaurant, supplier reorders",
+      "healthy": false,
+      "clarified_first": true,
+      "invented_steps_from_problem": 0,
+      "premature": {
+        "problem": false,
+        "walkthrough": false
+      },
+      "steps": {
+        "expected": 4,
+        "matched": 2,
+        "extracted": 2,
+        "owner_labeled": 1,
+        "owner_ok": 1,
+        "missed": [
+          "counts the walk-in",
+          "delivers on Wednesday"
+        ],
+        "not_steps": [],
+        "extra": [],
+        "owner_misses": []
+      },
+      "redundant": [
+        "trigger"
+      ],
+      "stated": 1,
+      "clarification": {
+        "needed": [
+          "steps",
+          "trigger",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ],
+        "addressed": [
+          "steps",
+          "trigger",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ]
+      },
+      "questions": 9,
+      "assessable": true,
+      "blockers": [],
+      "findings": {
+        "expected": 4,
+        "found": 2,
+        "missed": [
+          "inconsistent_decision (confirmed)",
+          "missing_exception_handling (confirmed)"
+        ],
+        "unlabeled": [
+          "unstructured_intake [confirmed] S1: work arrives by paper or whiteboard and is re-keyed by hand later"
+        ],
+        "unlabeled_artifact": 0,
+        "healthy_artifact": 0,
+        "status": [
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "manual_reentry"
+          },
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "waiting_dependency"
+          }
+        ],
+        "relinked_ok": 3,
+        "live": 3,
+        "expected_rule_detectable": 3,
+        "found_rule_detectable": 2
+      },
+      "recs": {
+        "ai": false,
+        "ai_warranted": false,
+        "count": 3,
+        "investigate": 0,
+        "validator_errors": [],
+        "act_on_tentative": 0
+      },
+      "corrections": {
+        "checks": 97,
+        "violations": []
+      }
+    },
+    {
+      "id": "ev-15",
+      "domain": "Veterinary clinic, prescription refills",
+      "healthy": false,
+      "clarified_first": true,
+      "invented_steps_from_problem": 0,
+      "premature": {
+        "problem": false,
+        "walkthrough": false
+      },
+      "steps": {
+        "expected": 3,
+        "matched": 3,
+        "extracted": 3,
+        "owner_labeled": 2,
+        "owner_ok": 2,
+        "missed": [],
+        "not_steps": [],
+        "extra": [],
+        "owner_misses": []
+      },
+      "redundant": [],
+      "stated": 2,
+      "clarification": {
+        "needed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ],
+        "addressed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ]
+      },
+      "questions": 11,
+      "assessable": true,
+      "blockers": [],
+      "findings": {
+        "expected": 5,
+        "found": 2,
+        "missed": [
+          "manual_reentry (confirmed)",
+          "bottleneck (confirmed)",
+          "single_point_of_failure (confirmed)"
+        ],
+        "unlabeled": [],
+        "unlabeled_artifact": 0,
+        "healthy_artifact": 0,
+        "status": [
+          {
+            "expected": "confirmed",
+            "got": "tentative",
+            "category": "unstructured_intake"
+          },
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "waiting_dependency"
+          }
+        ],
+        "relinked_ok": 2,
+        "live": 2,
+        "expected_rule_detectable": 4,
+        "found_rule_detectable": 2
+      },
+      "recs": {
+        "ai": true,
+        "ai_warranted": true,
+        "count": 3,
+        "investigate": 2,
+        "validator_errors": [],
+        "act_on_tentative": 0
+      },
+      "corrections": {
+        "checks": 110,
+        "violations": []
+      }
+    },
+    {
+      "id": "ev-16",
+      "domain": "Cleaning company, job scheduling",
+      "healthy": false,
+      "clarified_first": true,
+      "invented_steps_from_problem": 0,
+      "premature": {
+        "problem": false,
+        "walkthrough": false
+      },
+      "steps": {
+        "expected": 3,
+        "matched": 3,
+        "extracted": 3,
+        "owner_labeled": 2,
+        "owner_ok": 1,
+        "missed": [],
+        "not_steps": [],
+        "extra": [],
+        "owner_misses": [
+          "\"copies the online bookings\": expected Rosa, got unknown"
+        ]
+      },
+      "redundant": [],
+      "stated": 1,
+      "clarification": {
+        "needed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ],
+        "addressed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ]
+      },
+      "questions": 10,
+      "assessable": true,
+      "blockers": [],
+      "findings": {
+        "expected": 5,
+        "found": 1,
+        "missed": [
+          "duplicate_work (confirmed)",
+          "manual_reentry (confirmed)",
+          "single_point_of_failure (tentative)",
+          "manual_status_checking (confirmed)"
+        ],
+        "unlabeled": [
+          "tool_switching [confirmed] S1: S1 uses paper or whiteboard, phone",
+          "unstructured_intake [confirmed] S1: work arrives by paper or whiteboard, phone and is re-keyed by hand later"
+        ],
+        "unlabeled_artifact": 0,
+        "healthy_artifact": 0,
+        "status": [
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "unclear_ownership"
+          }
+        ],
+        "relinked_ok": 4,
+        "live": 4,
+        "expected_rule_detectable": 4,
+        "found_rule_detectable": 1
+      },
+      "recs": {
+        "ai": true,
+        "ai_warranted": false,
+        "count": 4,
+        "investigate": 0,
+        "validator_errors": [],
+        "act_on_tentative": 0
+      },
+      "corrections": {
+        "checks": 97,
+        "violations": []
+      }
+    },
+    {
+      "id": "ev-17",
+      "domain": "Event venue, booking inquiries (healthy)",
+      "healthy": true,
+      "clarified_first": true,
+      "invented_steps_from_problem": 0,
+      "premature": {
+        "problem": false,
+        "walkthrough": false
+      },
+      "steps": {
+        "expected": 4,
+        "matched": 4,
+        "extracted": 4,
+        "owner_labeled": 2,
+        "owner_ok": 1,
+        "missed": [],
+        "not_steps": [],
+        "extra": [],
+        "owner_misses": [
+          "\"sends the contract\": expected Nora, got unknown"
+        ]
+      },
+      "redundant": [
+        "ownership"
+      ],
+      "stated": 3,
+      "clarification": {
+        "needed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions"
+        ],
+        "addressed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions"
+        ]
+      },
+      "questions": 12,
+      "assessable": true,
+      "blockers": [],
+      "findings": {
+        "expected": 0,
+        "found": 0,
+        "missed": [],
+        "unlabeled": [
+          "unclear_ownership [confirmed] S3: asked who owns S3; the user did not know (rests on the scripted \"I don't know.\")",
+          "information_loss [tentative] S2,S3: asked how work reaches S3; the user did not know (rests on the scripted \"I don't know.\")",
+          "information_loss [tentative] S3,S4: asked how work reaches S4; the user did not know (rests on the scripted \"I don't know.\")"
+        ],
+        "unlabeled_artifact": 3,
+        "healthy_artifact": 3,
+        "status": [],
+        "relinked_ok": 3,
+        "live": 3,
+        "expected_rule_detectable": 0,
+        "found_rule_detectable": 0
+      },
+      "recs": {
+        "ai": false,
+        "ai_warranted": false,
+        "count": 3,
+        "investigate": 2,
+        "validator_errors": [],
+        "act_on_tentative": 0
+      },
+      "corrections": {
+        "checks": 97,
+        "violations": []
+      }
+    },
+    {
+      "id": "ev-18",
+      "domain": "Insurance agency, claim help",
+      "healthy": false,
+      "clarified_first": true,
+      "invented_steps_from_problem": 0,
+      "premature": {
+        "problem": false,
+        "walkthrough": false
+      },
+      "steps": {
+        "expected": 2,
+        "matched": 2,
+        "extracted": 2,
+        "owner_labeled": 1,
+        "owner_ok": 1,
+        "missed": [],
+        "not_steps": [],
+        "extra": [],
+        "owner_misses": []
+      },
+      "redundant": [],
+      "stated": 1,
+      "clarification": {
+        "needed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ],
+        "addressed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ]
+      },
+      "questions": 10,
+      "assessable": true,
+      "blockers": [],
+      "findings": {
+        "expected": 5,
+        "found": 1,
+        "missed": [
+          "manual_reentry (confirmed)",
+          "missing_terminal_condition (confirmed)",
+          "repeated_customer_followup (confirmed)",
+          "tool_switching (confirmed)"
+        ],
+        "unlabeled": [
+          "unclear_ownership [confirmed] S1: asked who owns S1; the user did not know (rests on the scripted \"I don't know.\")"
+        ],
+        "unlabeled_artifact": 1,
+        "healthy_artifact": 0,
+        "status": [
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "waiting_dependency"
+          }
+        ],
+        "relinked_ok": 2,
+        "live": 2,
+        "expected_rule_detectable": 4,
+        "found_rule_detectable": 1
+      },
+      "recs": {
+        "ai": false,
+        "ai_warranted": false,
+        "count": 2,
+        "investigate": 0,
+        "validator_errors": [],
+        "act_on_tentative": 0
+      },
+      "corrections": {
+        "checks": 97,
+        "violations": []
+      }
+    },
+    {
+      "id": "ev-19",
+      "domain": "Tutoring service, sign-ups",
+      "healthy": false,
+      "clarified_first": true,
+      "invented_steps_from_problem": 0,
+      "premature": {
+        "problem": false,
+        "walkthrough": false
+      },
+      "steps": {
+        "expected": 3,
+        "matched": 3,
+        "extracted": 3,
+        "owner_labeled": 1,
+        "owner_ok": 1,
+        "missed": [],
+        "not_steps": [],
+        "extra": [],
+        "owner_misses": []
+      },
+      "redundant": [],
+      "stated": 1,
+      "clarification": {
+        "needed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ],
+        "addressed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ]
+      },
+      "questions": 12,
+      "assessable": true,
+      "blockers": [],
+      "findings": {
+        "expected": 4,
+        "found": 3,
+        "missed": [
+          "missing_exception_handling (confirmed)"
+        ],
+        "unlabeled": [],
+        "unlabeled_artifact": 0,
+        "healthy_artifact": 0,
+        "status": [
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "manual_status_checking"
+          },
+          {
+            "expected": "confirmed",
+            "got": "confirmed",
+            "category": "waiting_dependency"
+          },
+          {
+            "expected": "tentative",
+            "got": "tentative",
+            "category": "missing_terminal_condition"
+          }
+        ],
+        "relinked_ok": 3,
+        "live": 3,
+        "expected_rule_detectable": 4,
+        "found_rule_detectable": 3
+      },
+      "recs": {
+        "ai": false,
+        "ai_warranted": false,
+        "count": 3,
+        "investigate": 1,
+        "validator_errors": [],
+        "act_on_tentative": 0
+      },
+      "corrections": {
+        "checks": 114,
+        "violations": []
+      }
+    },
+    {
+      "id": "ev-20",
+      "domain": "Online store, returns (healthy)",
+      "healthy": true,
+      "clarified_first": true,
+      "invented_steps_from_problem": 0,
+      "premature": {
+        "problem": false,
+        "walkthrough": false
+      },
+      "steps": {
+        "expected": 3,
+        "matched": 3,
+        "extracted": 3,
+        "owner_labeled": 0,
+        "owner_ok": 0,
+        "missed": [],
+        "not_steps": [],
+        "extra": [],
+        "owner_misses": []
+      },
+      "redundant": [
+        "completion"
+      ],
+      "stated": 2,
+      "clarification": {
+        "needed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ],
+        "addressed": [
+          "steps",
+          "ownership",
+          "handoffs",
+          "exceptions",
+          "completion"
+        ]
+      },
+      "questions": 14,
+      "assessable": true,
+      "blockers": [],
+      "findings": {
+        "expected": 0,
+        "found": 0,
+        "missed": [],
+        "unlabeled": [
+          "unclear_ownership [confirmed] S3: asked who owns S3; the user did not know (rests on the scripted \"I don't know.\")",
+          "information_loss [tentative] S2,S3: asked how work reaches S3; the user did not know (rests on the scripted \"I don't know.\")"
+        ],
+        "unlabeled_artifact": 2,
+        "healthy_artifact": 2,
+        "status": [],
+        "relinked_ok": 2,
+        "live": 2,
+        "expected_rule_detectable": 0,
+        "found_rule_detectable": 0
+      },
+      "recs": {
+        "ai": false,
+        "ai_warranted": false,
+        "count": 2,
+        "investigate": 1,
+        "validator_errors": [],
+        "act_on_tentative": 0
+      },
+      "corrections": {
+        "checks": 97,
+        "violations": []
+      }
+    }
+  ]
+}
