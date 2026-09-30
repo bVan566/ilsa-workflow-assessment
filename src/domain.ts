@@ -115,19 +115,24 @@ export interface Workflow {
 export type FindingSource = 'rule' | 'model';
 
 /**
- * confirmed      passed evidence validation
+ * confirmed      passed validation, supported by facts the user stated plainly
+ * tentative      passed validation, but rests on inferred facts or a structural pattern;
+ *                shown as "needs confirmation", never as an established problem
  * rejected       failed validation (kept for audit, never shown as a finding)
  * user_accepted  a human reviewer marked it accurate
  * user_disputed  a human reviewer marked it inaccurate (excluded from the assessment)
  */
-export type FindingStatus = 'confirmed' | 'rejected' | 'user_accepted' | 'user_disputed';
+export type FindingStatus = 'confirmed' | 'tentative' | 'rejected' | 'user_accepted' | 'user_disputed';
+export const FINDING_STATUSES: readonly FindingStatus[] = ['confirmed', 'tentative', 'rejected', 'user_accepted', 'user_disputed'];
 
 export interface Finding {
   id: string;               // F1, F2, ...
+  signature: string;        // category + where; keeps the id and review status stable across re-detection
   category: FrictionCategory;
   step_ids: string[];
   evidence: EvidenceRef[];
   rationale: string;        // why this creates cost, delay or risk
+  support: string;          // which facts in the model support it
   source: FindingSource;
   status: FindingStatus;
   rejection_reason: string | null;

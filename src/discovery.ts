@@ -1,4 +1,5 @@
 import type { Assessment, Evidence, Question } from './domain.ts';
+import { diagnose, type FindingProposal } from './friction.ts';
 import { candidates, coverage, nextQuestion, type Candidate } from './gaps.ts';
 import { HeuristicInterpreter } from './interpret/heuristic.ts';
 import type { Interpreter } from './interpret/types.ts';
@@ -97,11 +98,30 @@ export class Discovery {
       delta = await interpreter.interpret({ evidence, question, model: a.model });
     }
     const result = applyDelta(a.model, delta, a.evidence, question, evidence, () => this.store.nextStepId(id));
-    const details = [...notes, ...result.applied.map((s) => `applied ${s}`), ...result.dropped.map((s) => `dropped ${s}`)];
+    // Findings are always re-derived from the current model, so they can never describe a stale version of it.
+    const dx = diagnose(result.model, a.evidence, a.model.findings, () => this.store.nextFindingId(id));
+    result.model.findings = dx.findings;
+    const details = [...notes, ...result.applied.map((s) => `applied ${s}`), ...result.dropped.map((s) => `dropped ${s}`),
+      ...dx.log.map((s) => `finding ${s}`)];
     const changed = JSON.stringify(result.model) !== JSON.stringify(a.model);
     const revision = changed
       ? this.store.saveModel(id, result.model, `interpreted ${evidence.id}${question ? ` (answer to ${question.id})` : ''}`, interpreter.name, details)
       : null;
-    return { interpreter: interpreter.name, applied: [...notes, ...result.applied], dropped: result.dropped, revision };
+    return { interpreter: interpreter.name, applied: [...notes, ...result.applied, ...dx.log], dropped: result.dropped, revision };
+  }
+
+  /**
+   * Findings proposed by a language model. They go through the same gate as rule findings;
+   * anything unsupported is kept only as a rejected, audited proposal.
+   */
+  proposeFindings(id: string, proposals: Omit<FindingProposal, 'source'>[], actor: string): { state: DiscoveryState; log: string[] } {
+    const a = this.store.get(id);
+    const dx = diagnose(a.model, a.evidence, a.model.findings, () => this.store.nextFindingId(id),
+      proposals.map((p) => ({ ...p, source: 'model' as const })));
+    const model = { ...a.model, findings: dx.findings };
+    if (JSON.stringify(model) !== JSON.stringify(a.model)) {
+      this.store.saveModel(id, model, `${proposals.length} model-proposed finding(s) vetted`, actor, dx.log.map((s) => `finding ${s}`));
+    }
+    return { state: this.state(id), log: dx.log };
   }
 }

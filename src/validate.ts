@@ -1,5 +1,5 @@
 import {
-  CERTAINTIES, FRICTION_CATEGORIES, STEP_FACTS, WORKFLOW_FACTS,
+  CERTAINTIES, FINDING_STATUSES, FRICTION_CATEGORIES, STEP_FACTS, WORKFLOW_FACTS,
   type Evidence, type EvidenceRef, type Fact, type Model,
 } from './domain.ts';
 import { isHedged } from './language.ts';
@@ -110,7 +110,8 @@ export function validateModel(model: Model, evidence: Evidence[]): string[] {
     else findingIds.add(f.id);
     if (!(f.category in FRICTION_CATEGORIES)) errors.push(`${p}.category "${f.category}" is not in the friction taxonomy`);
     if (!['rule', 'model'].includes(f.source)) errors.push(`${p}.source must be rule or model`);
-    if (!['confirmed', 'rejected', 'user_accepted', 'user_disputed'].includes(f.status)) errors.push(`${p}.status is invalid`);
+    if (!FINDING_STATUSES.includes(f.status)) errors.push(`${p}.status is invalid`);
+    if (!nonEmpty(f.signature)) errors.push(`${p}.signature is required`);
     if (!Array.isArray(f.step_ids)) errors.push(`${p}.step_ids must be an array`);
     // Rejected findings are kept for audit; the rest must be fully grounded.
     if (f.status === 'rejected') {

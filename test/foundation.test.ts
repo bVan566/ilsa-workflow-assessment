@@ -100,7 +100,7 @@ describe('model validation', () => {
 
   it('rejects findings outside the taxonomy, on unknown steps, or without evidence', () => {
     const m = base();
-    m.findings = [{ id: 'F1', category: 'bad_vibes' as never, step_ids: ['S7'], evidence: [], rationale: 'r',
+    m.findings = [{ id: 'F1', signature: 'x', support: '', category: 'bad_vibes' as never, step_ids: ['S7'], evidence: [], rationale: 'r',
       source: 'model', status: 'confirmed', rejection_reason: null }];
     const errors = validateModel(m, evidence);
     assert.ok(errors.some((e) => /not in the friction taxonomy/.test(e)));
@@ -110,7 +110,7 @@ describe('model validation', () => {
 
   it('keeps rejected findings for audit without requiring evidence, but requires a reason', () => {
     const m = base();
-    m.findings = [{ id: 'F1', category: 'bottleneck', step_ids: [], evidence: [], rationale: '', source: 'model',
+    m.findings = [{ id: 'F1', signature: 'bottleneck:workflow', support: '', category: 'bottleneck', step_ids: [], evidence: [], rationale: '', source: 'model',
       status: 'rejected', rejection_reason: null }];
     assert.ok(validateModel(m, evidence).some((e) => /no rejection_reason/.test(e)));
     m.findings[0].rejection_reason = 'quote not found in evidence';
