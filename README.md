@@ -4,9 +4,11 @@ A working prototype of an AI-assisted workflow discovery and assessment tool. A 
 
 **No API key is needed.** The app, the sample, the tests and the evaluation all run on a deterministic, no-key interpreter. Claude is an optional add-on.
 
-## 60-second demo
+## 90-second demo
 
-`npm install && npm start`, then open http://localhost:3100.
+**Watch the demo:** https://youtu.be/ykFrvLkGzrQ
+
+To run it yourself: `npm install && npm start`, then open http://localhost:3100.
 
 1. **Try the sample (guided).**
    - The first question is "Walk me through what happens…", with a *Why this matters* line.
