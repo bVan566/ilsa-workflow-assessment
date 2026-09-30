@@ -22,7 +22,7 @@ import type { Store } from './store.ts';
 //   context       the user adds information                (evidence kind "context")
 
 export interface ReviewResult {
-  action: 'correction' | 'confirmation' | 'dispute' | 'context';
+  action: 'correction' | 'confirmation' | 'dispute' | 'context' | 'answer';
   revision: number | null;
   log: string[];
   assessment: { regenerated: boolean; report: Report | null; readiness: Readiness };
@@ -188,7 +188,7 @@ export class Review {
     const { state, interpretation } = await this.discovery.answer(id, questionId, text);
     const changed = this.store.get(id).revision !== before;
     return {
-      action: 'context',
+      action: 'answer',
       revision: changed ? this.store.get(id).revision : null,
       log: [...interpretation.applied, ...interpretation.dropped.map((d) => `dropped ${d}`)],
       assessment: changed ? this.assessor.refresh(id) : { regenerated: false, report: null, readiness: this.assessor.readiness(id) },
