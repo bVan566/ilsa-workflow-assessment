@@ -4,6 +4,7 @@ import { extname, join } from 'node:path';
 import { Assessor, ReportInvalidError } from './assess.ts';
 import { Discovery } from './discovery.ts';
 import { FRICTION_CATEGORIES } from './domain.ts';
+import { claudeAvailable, ClaudeFindingProposer, ClaudeInterpreter, type FindingProposer } from './interpret/claude.ts';
 import { HeuristicInterpreter } from './interpret/heuristic.ts';
 import type { Interpreter } from './interpret/types.ts';
 import { Review, type ReviewResult } from './review.ts';
@@ -24,13 +25,18 @@ export interface App {
   discovery: Discovery;
   assessor: Assessor;
   review: Review;
+  /** The finished sample always uses the no-key interpreter: free, and identical every time. */
+  sampleDiscovery: Discovery;
   interpreterName: string;
 }
 
-export function makeApp(store: Store, interpreter: Interpreter = new HeuristicInterpreter()): App {
-  const discovery = new Discovery(store, interpreter);
+export function makeApp(store: Store, interpreter: Interpreter = new HeuristicInterpreter(), proposer?: FindingProposer): App {
+  const discovery = new Discovery(store, interpreter, new HeuristicInterpreter(), proposer);
   const assessor = new Assessor(store);
-  return { store, discovery, assessor, review: new Review(store, discovery, assessor), interpreterName: interpreter.name };
+  return {
+    store, discovery, assessor, review: new Review(store, discovery, assessor),
+    sampleDiscovery: new Discovery(store), interpreterName: interpreter.name,
+  };
 }
 
 /** Everything the UI shows for one assessment. Rejected audit-only findings are counted, not included. */
@@ -115,7 +121,7 @@ async function route(app: App, req: IncomingMessage, res: ServerResponse): Promi
     // Guided: start the sample and answer question by question in the UI.
     // Complete: run the whole sample interview through the same pipeline, then assess.
     if (body.mode === 'complete') {
-      const state = await runSample(app.discovery);
+      const state = await runSample(app.sampleDiscovery);
       app.assessor.generate(state.assessment.id);
       return send(res, 201, { view: view(app, state.assessment.id) });
     }
@@ -203,8 +209,9 @@ if (import.meta.main) {
     console.error('Set ILSA_DATA_DIR to a writable directory (on Windows, keep the full path under 260 characters).');
     process.exit(1);
   }
-  const app = makeApp(store);
+  // Claude is used only when a key is configured; otherwise everything runs on the no-key interpreter.
+  const app = claudeAvailable() ? makeApp(store, new ClaudeInterpreter(), new ClaudeFindingProposer()) : makeApp(store);
   createApp(app).listen(PORT, process.env.HOST ?? '127.0.0.1', () => {
-    console.log(`Ilsa running at http://localhost:${PORT}  (interpreter: ${app.interpreterName})`);
+    console.log(`Ilsa running at http://localhost:${PORT}  (interpreter: ${app.interpreterName}${claudeAvailable() ? ', falls back to heuristic' : ', no API key'})`);
   });
 }

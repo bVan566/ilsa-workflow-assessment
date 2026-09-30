@@ -1,6 +1,7 @@
 import type { Assessment, Evidence, Question } from './domain.ts';
 import { diagnose, type FindingProposal } from './friction.ts';
 import { candidates, coverage, factState, nextQuestion, sequenceConfirmed, WHY, WHY_CONFIRM, type Candidate } from './gaps.ts';
+import type { FindingProposer } from './interpret/claude.ts';
 import { HeuristicInterpreter } from './interpret/heuristic.ts';
 import type { Interpreter } from './interpret/types.ts';
 import { applyDelta, getFact } from './merge.ts';
@@ -35,11 +36,13 @@ export class Discovery {
   private readonly store: Store;
   private readonly primary: Interpreter;
   private readonly fallback: Interpreter;
+  private readonly proposer?: FindingProposer;
 
-  constructor(store: Store, primary: Interpreter = new HeuristicInterpreter(), fallback: Interpreter = new HeuristicInterpreter()) {
+  constructor(store: Store, primary: Interpreter = new HeuristicInterpreter(), fallback: Interpreter = new HeuristicInterpreter(), proposer?: FindingProposer) {
     this.store = store;
     this.primary = primary;
     this.fallback = fallback;
+    this.proposer = proposer;
   }
 
   async start(name: string, problemStatement: string): Promise<{ state: DiscoveryState; interpretation: Interpretation }> {
@@ -127,8 +130,24 @@ export class Discovery {
       delta = await interpreter.interpret({ evidence, question, model: a.model });
     }
     const result = applyDelta(a.model, delta, a.evidence, question, evidence, () => this.store.nextStepId(id));
+    // Optional: a language model proposes friction the fixed rules cannot see. Its proposals go
+    // through the same gate as rule findings. Only when the workflow changed, and not when the
+    // interpreter has just failed over (the API is then most likely unavailable).
+    let proposals: FindingProposal[] = [];
+    const workflowChanged = JSON.stringify(result.model.workflow) !== JSON.stringify(a.model.workflow);
+    if (this.proposer && workflowChanged) {
+      if (interpreter !== this.primary) {
+        notes.push(`finding proposer skipped because ${this.primary.name} is unavailable`);
+      } else {
+        try {
+          proposals = (await this.proposer.propose(result.model, a.evidence)).map((p) => ({ ...p, source: 'model' as const }));
+        } catch (err) {
+          notes.push(`finding proposer failed (${err instanceof Error ? err.message : String(err)}); rule findings only`);
+        }
+      }
+    }
     // Findings are always re-derived from the current model, so they can never describe a stale version of it.
-    const dx = diagnose(result.model, a.evidence, a.model.findings, () => this.store.nextFindingId(id));
+    const dx = diagnose(result.model, a.evidence, a.model.findings, () => this.store.nextFindingId(id), proposals);
     result.model.findings = dx.findings;
     const details = [...notes, ...result.applied.map((s) => `applied ${s}`), ...result.dropped.map((s) => `dropped ${s}`),
       ...dx.log.map((s) => `finding ${s}`)];

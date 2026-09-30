@@ -526,7 +526,11 @@ async function startSample(mode) {
 }
 
 async function init() {
-  categories = (await api('GET', '/config')).data.categories ?? {};
+  const config = (await api('GET', '/config')).data;
+  categories = config.categories ?? {};
+  document.getElementById('interpreter').textContent = config.interpreter?.startsWith('claude')
+    ? `Reading answers with ${config.interpreter.replace('claude:', 'Claude ')} (falls back to the no-key rules if unavailable).`
+    : 'Reading answers with the no-key rule-based interpreter. No AI service is being called.';
   const dialog = document.getElementById('new-dialog');
   document.getElementById('new-btn').addEventListener('click', () => dialog.showModal());
   document.getElementById('new-form').addEventListener('submit', async (e) => {
