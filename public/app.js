@@ -47,7 +47,11 @@ function showError(msg) {
 
 // ---------------------------------------------------------------- provenance
 
-/** The badge that says where a fact came from. */
+/**
+ * The badge that says where a fact came from. Values Ilsa read from your answers are the
+ * default and carry no badge (their source is in the hover text); only values that need
+ * attention or that you changed are marked.
+ */
 function badge(f) {
   if (f.by === 'user') {
     if (f.user_action === 'confirmed') return h('span', { class: 'badge b-user' }, 'User confirmed');
@@ -55,13 +59,18 @@ function badge(f) {
     return h('span', { class: 'badge b-user' }, 'User changed');
   }
   if (f.status === 'inferred') return h('span', { class: 'badge b-confirm', title: 'Said with some uncertainty; not treated as fact until confirmed' }, 'Needs confirmation');
-  if (f.status === 'unknown') return h('span', { class: 'badge b-unknown' }, f.evidence.length ? 'Unknown' : 'Not yet known');
-  return h('span', { class: 'badge b-ilsa', title: `Ilsa read this from your words (${ids(f.evidence)})` }, 'Ilsa inferred');
+  if (f.status === 'unknown') return f.evidence.length ? h('span', { class: 'badge b-unknown' }, 'Unknown') : null;
+  return null;
+}
+
+function sourceOf(f) {
+  if (!f.evidence.length) return 'Not established yet';
+  return f.by === 'user' ? `Set by you (${ids(f.evidence)})` : `Read by Ilsa from your answer (${ids(f.evidence)})`;
 }
 
 function factValue(f) {
   if (f.status === 'absent') return 'Does not exist';
-  if (f.status === 'unknown') return f.evidence.length ? 'Nobody could say' : '—';
+  if (f.status === 'unknown') return f.evidence.length ? 'Nobody could say' : h('span', { class: 'muted' }, 'Not yet known');
   return f.value;
 }
 
@@ -117,7 +126,7 @@ function factControls(slot, f) {
 }
 
 function factRow(name, slot, f) {
-  return [h('dt', {}, name), h('dd', { 'data-slot': slot }, factValue(f), badge(f), factControls(slot, f), wasLine(f))];
+  return [h('dt', {}, name), h('dd', { 'data-slot': slot, title: sourceOf(f) }, factValue(f), badge(f), factControls(slot, f), wasLine(f))];
 }
 
 // ---------------------------------------------------------------- change summary (the correction loop)
@@ -253,18 +262,29 @@ function discoveryCard() {
           apply(before, data);
         } }, 'Skip')),
     ] : h('p', {}, view.discovery_complete
-      ? 'Discovery is complete: there is nothing left worth asking. Anything still unknown is listed under Readiness or in the assessment.'
+      ? 'Discovery is sufficient for assessment. Remaining unknowns are listed below.'
       : 'No open question.'),
     h('p', { class: 'hint' }, `${view.questions_answered} question(s) answered.`));
 }
 
 function readinessCard() {
   const r = view.readiness;
-  const STATE = { established: 'established', tentative: 'needs confirmation', unresolved: 'nobody knows', missing: 'not asked yet' };
-  const cov = Object.entries(view.coverage).map(([d, s]) => h('span', { class: `pill c-${s}` }, `${DIM[d]}: ${STATE[s]}`));
+  const blocking = new Set(r.blocking.map((b) => b.dimension));
+  const unknownKinds = new Map();
+  for (const u of r.unknowns) unknownKinds.set(u.dimension, [...(unknownKinds.get(u.dimension) ?? []), u.kind]);
+  const cov = Object.keys(view.coverage).map((d) => {
+    if (blocking.has(d)) return h('span', { class: 'pill c-blocking' }, `✕ ${DIM[d]} · blocking`);
+    const kinds = unknownKinds.get(d);
+    if (kinds) {
+      const explicit = kinds.every((k) => k === 'user_does_not_know');
+      return h('span', { class: 'pill c-unknown' }, `? ${DIM[d]} · ${explicit ? 'explicitly unknown' : 'unknown, not blocking'}`);
+    }
+    return h('span', { class: 'pill c-established' }, `✓ ${DIM[d]}`);
+  });
   return h('div', { class: 'card' },
     h('h2', {}, 'Readiness'),
     h('div', { class: 'coverage' }, cov),
+    h('p', { class: 'hint' }, '✓ established · ? known to be unknown (does not block) · ✕ blocks the assessment'),
     r.ready
       ? h('p', {}, h('span', { class: 'badge b-ok' }, 'Ready'), ' Every foundational part of the process is established or explicitly unknown.')
       : [
@@ -292,10 +312,11 @@ function contextCard() {
 function stepNode(s, i, n) {
   const provenance = s.added_by === 'user'
     ? h('span', { class: 'badge b-user' }, 'User added')
-    : s.summary_was ? h('span', { class: 'badge b-user' }, 'User changed') : h('span', { class: 'badge b-ilsa' }, 'Ilsa inferred');
+    : s.summary_was ? h('span', { class: 'badge b-user' }, 'User changed') : null;
   return h('div', { class: 'node', 'data-step': s.id },
     h('div', { class: 'head' },
-      h('div', {}, h('span', { class: 'sid' }, `${i + 1} · ${s.id}`), ' ', h('span', { class: 'summary' }, s.summary), provenance),
+      h('div', { title: s.added_by === 'user' ? 'Added by you' : `Read by Ilsa from your answer (${ids(s.evidence)})` },
+        h('span', { class: 'sid' }, `${i + 1} · ${s.id}`), ' ', h('span', { class: 'summary' }, s.summary), provenance),
       reviewMode && h('span', { class: 'ctl' },
         h('button', { class: 'small', title: 'Move up', disabled: i === 0, onclick: () => review('move-step', { step_id: s.id, to_index: i - 1 }) }, '↑'),
         h('button', { class: 'small', title: 'Move down', disabled: i === n - 1, onclick: () => review('move-step', { step_id: s.id, to_index: i + 1 }) }, '↓'),
@@ -344,7 +365,8 @@ function mapCard() {
   return h('div', { class: 'card' },
     h('div', { class: 'titlebar' }, h('h2', {}, 'Workflow map'),
       h('span', { class: `pill ${confirmed ? 'c-established' : 'c-tentative'}` }, confirmed ? 'Step list confirmed' : 'Step list not yet confirmed')),
-    wf.steps.length === 0 ? h('p', { class: 'hint' }, 'No steps yet. They appear as you describe the process.') : null,
+    wf.steps.length === 0 ? h('p', { class: 'hint' }, 'No steps yet. They appear as you describe the process.')
+      : h('p', { class: 'hint' }, 'Unmarked values were read by Ilsa from your answers (hover to see which one). Badges mark what you changed or confirmed, and what still needs attention.'),
     h('div', { class: 'map' }, nodes),
     reviewMode && h('div', { class: 'row' },
       addStepForm(),
@@ -353,8 +375,9 @@ function mapCard() {
 
 function findingItem(f, { controls }) {
   const status = { confirmed: ['Supported by your answers', 'b-ok'], tentative: ['Needs confirmation', 'b-confirm'], user_accepted: ['User confirmed', 'b-user'] }[f.status];
-  const evidence = new Map(view.evidence.map((e) => [e.id, e]));
-  return h('div', { class: 'finding', 'data-finding': f.id },
+  const quotes = dedupeQuotes(f.evidence);
+  const tone = { confirmed: 'f-confirmed', tentative: 'f-tentative', user_accepted: 'f-user' }[f.status] ?? '';
+  return h('div', { class: `finding ${tone}`, 'data-finding': f.id },
     h('div', { class: 'titlebar' },
       h('div', {}, h('span', { class: 'cat' }, `${f.id} · ${label(f.category)}`), status && h('span', { class: `badge ${status[1]}` }, status[0])),
       controls && reviewMode && f.status !== 'user_accepted' && h('span', { class: 'ctl' },
@@ -366,7 +389,21 @@ function findingItem(f, { controls }) {
     f.step_ids.length ? h('div', { class: 'hint' }, `Steps: ${f.step_ids.map((id) => `${id} "${stepName(id)}"`).join(' → ')}`) : null,
     h('div', {}, f.support),
     h('div', { class: 'hint' }, f.rationale),
-    f.evidence.map((r) => h('blockquote', {}, `${r.evidence_id}: "${evidence.get(r.evidence_id)?.kind === 'problem_statement' ? r.quote : r.quote}"`)));
+    quotes.length ? h('details', {}, h('summary', { class: 'hint' }, `Show evidence (${quotes.length})`),
+      quotes.map((r) => h('blockquote', {}, `${r.evidence_id}: "${r.quote}"`))) : null);
+}
+
+/** One entry per distinct quote: exact repeats are dropped, and a quote contained in a longer one from the same answer is folded into it. */
+function dedupeQuotes(refs) {
+  const norm = (t) => t.toLowerCase().replace(/s+/g, ' ').trim();
+  const out = [];
+  for (const r of refs) {
+    const q = norm(r.quote);
+    const same = out.findIndex((o) => o.evidence_id === r.evidence_id && (norm(o.quote).includes(q) || q.includes(norm(o.quote))));
+    if (same === -1) out.push(r);
+    else if (q.length > norm(out[same].quote).length) out[same] = r;
+  }
+  return out;
 }
 
 function findingsCard() {
