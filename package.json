@@ -1,0 +1,20 @@
+{
+  "name": "ilsa-workflow-assessment",
+  "version": "0.1.0",
+  "description": "Working prototype of an AI-assisted workflow discovery and assessment tool.",
+  "author": "Billy VanVorst",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=24.2"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env src/server.ts",
+    "test": "node --test \"test/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}
