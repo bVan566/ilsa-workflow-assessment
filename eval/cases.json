@@ -1,0 +1,482 @@
+[
+  {
+    "id": "ev-01", "domain": "Dental clinic, appointment requests",
+    "problem": "Patients say they left messages and never got an appointment.",
+    "walkthrough": "A patient calls and usually leaves a voicemail after hours. The next morning the receptionist listens to the voicemails. She writes each request on a sticky note. Then she calls the patient back to book a time in the scheduling system. If the patient doesn't answer, the note just sits on her desk.",
+    "expected_steps": [{ "key": "listens to the voicemails", "owner": "receptionist" }, { "key": "writes each request" }, { "key": "calls the patient back" }],
+    "not_steps": ["A patient calls"],
+    "stated_dimensions": ["trigger", "exceptions"],
+    "answers": {
+      "trigger": "Patients call and leave a voicemail.",
+      "completion": "Once it's in the scheduling system we consider it done.",
+      "exceptions": "The sticky note just sits there until someone notices.",
+      "waiting": "We wait for the patient to call us back.",
+      "decisions": "No real decisions, we just book the first open slot.",
+      "owners": [{ "match": "sticky", "text": "The receptionist." }, { "match": "calls the patient", "text": "The receptionist." }],
+      "handoffs": [],
+      "systems": [{ "match": "voicemail", "text": "Phone voicemail." }, { "match": "sticky", "text": "Paper sticky notes." }, { "match": "calls the patient", "text": "Phone and the scheduling system." }]
+    },
+    "expected_findings": [
+      { "category": "missing_exception_handling", "status": "confirmed" },
+      { "category": "waiting_dependency", "status": "confirmed" },
+      { "category": "unstructured_intake", "status": "confirmed" },
+      { "category": "manual_reentry", "status": "confirmed" }
+    ],
+    "ai_warranted": true
+  },
+  {
+    "id": "ev-02", "domain": "Landscaping, quote requests",
+    "problem": "We send quotes but most customers never hear back from us about scheduling.",
+    "walkthrough": "Customers request a quote through our website form. The form lands in the shared inbox. Carlos drives out and measures the yard. Then he types the measurements into our quoting spreadsheet. The office manager emails the quote to the customer. After that it's whoever remembers to follow up.",
+    "expected_steps": [{ "key": "measures the yard", "owner": "Carlos" }, { "key": "types the measurements" }, { "key": "emails the quote", "owner": "office manager" }, { "key": "follow up" }],
+    "not_steps": [],
+    "stated_dimensions": ["trigger"],
+    "answers": {
+      "completion": "I don't know, we never really close them.",
+      "exceptions": "Nothing happens, it just gets forgotten.",
+      "waiting": "We wait for Carlos to have a free afternoon to measure.",
+      "decisions": "Carlos decides the price based on experience.",
+      "owners": [{ "match": "types the measurements", "text": "Carlos." }],
+      "handoffs": [{ "match": "measures", "text": "The office manager texts Carlos the address." }, { "match": "types", "text": "Carlos does both." }, { "match": "emails the quote", "text": "Carlos tells her when it is ready." }, { "match": "follow up", "text": "I don't know." }],
+      "systems": [{ "match": "measures", "text": "Paper notepad." }, { "match": "emails", "text": "Email." }, { "match": "follow up", "text": "Phone." }]
+    },
+    "expected_findings": [
+      { "category": "manual_reentry", "status": "confirmed" },
+      { "category": "unclear_ownership", "status": "confirmed" },
+      { "category": "missing_exception_handling", "status": "confirmed" },
+      { "category": "missing_terminal_condition", "status": "confirmed" },
+      { "category": "information_loss", "status": "confirmed" },
+      { "category": "waiting_dependency", "status": "confirmed" }
+    ],
+    "ai_warranted": false
+  },
+  {
+    "id": "ev-03", "domain": "Bakery, custom cake orders",
+    "problem": "Custom cake orders get mixed up and a few were missed entirely.",
+    "walkthrough": "Customers message us on Instagram with what they want. I copy the order details into a paper order book. Then Priya checks the order book every morning and bakes the cakes due that week. When the cake is picked up, the customer pays at the counter.",
+    "expected_steps": [{ "key": "copy the order details", "owner": "you" }, { "key": "checks the order book", "owner": "Priya" }],
+    "not_steps": ["customer pays"],
+    "stated_dimensions": ["trigger", "completion"],
+    "answers": {
+      "trigger": "Customers message us on Instagram.",
+      "completion": "It's done when they pick it up and pay.",
+      "exceptions": "If Priya misses it in the book, we find out when the customer shows up.",
+      "waiting": "Sometimes we wait on the customer to confirm the design.",
+      "decisions": "Priya decides if we can fit it in.",
+      "confirm_by_dimension": { "waiting": "I'm not sure how often." },
+      "owners": [],
+      "handoffs": [{ "match": "checks the order book", "text": "She just checks the book when she gets in." }],
+      "systems": [{ "match": "checks", "text": "The paper order book." }]
+    },
+    "expected_findings": [
+      { "category": "manual_reentry", "status": "confirmed" },
+      { "category": "unstructured_intake", "status": "confirmed" },
+      { "category": "manual_status_checking", "status": "confirmed" },
+      { "category": "missing_exception_handling", "status": "confirmed" },
+      { "category": "waiting_dependency", "status": "tentative" }
+    ],
+    "ai_warranted": true
+  },
+  {
+    "id": "ev-04", "domain": "Accounting firm, new client onboarding",
+    "problem": "New clients complain onboarding takes weeks.",
+    "walkthrough": "A new client signs the engagement letter. Then our admin emails them a checklist of documents to send. We wait until they upload everything to the portal. Jamal reviews the documents and enters the details into our tax software. Finally the partner approves the file before we start work.",
+    "expected_steps": [{ "key": "emails them a checklist", "owner": "admin" }, { "key": "reviews the documents", "owner": "Jamal" }, { "key": "approves the file", "owner": "partner" }],
+    "not_steps": ["client signs"],
+    "stated_dimensions": ["waiting", "decisions"],
+    "answers": {
+      "trigger": "It starts when the client signs the engagement letter.",
+      "completion": "When the partner approves the file, onboarding is done and we mark it complete in the tax software.",
+      "exceptions": "If documents are missing, the admin emails them again, sometimes three or four times.",
+      "waiting": "We wait on the client to upload documents.",
+      "decisions": "The partner approves each file.",
+      "owners": [],
+      "handoffs": [{ "match": "reviews the documents", "text": "The portal emails Jamal when an upload arrives." }, { "match": "approves", "text": "Jamal puts it in the partner review queue in the tax software." }],
+      "systems": [{ "match": "emails them", "text": "Email." }, { "match": "approves", "text": "The tax software." }]
+    },
+    "expected_findings": [
+      { "category": "waiting_dependency", "status": "confirmed" },
+      { "category": "manual_reentry", "status": "confirmed" }
+    ],
+    "ai_warranted": false
+  },
+  {
+    "id": "ev-05", "domain": "Small office IT helpdesk (healthy)",
+    "problem": "We want to check whether our support process has any gaps.",
+    "walkthrough": "Staff submit a ticket through the helpdesk form. The helpdesk system assigns the ticket to Sam automatically. Sam replies to the staff member within one business day. When the issue is fixed, Sam marks the ticket resolved in the helpdesk system.",
+    "expected_steps": [{ "key": "assigns the ticket" }, { "key": "replies to the staff member", "owner": "Sam" }, { "key": "marks the ticket resolved", "owner": "Sam" }],
+    "not_steps": [],
+    "stated_dimensions": ["trigger", "completion", "ownership"],
+    "answers": {
+      "completion": "It's done when Sam marks the ticket resolved in the helpdesk system.",
+      "exceptions": "If Sam is out, tickets are automatically reassigned to Lee.",
+      "waiting": "No waiting, Sam handles everything directly.",
+      "decisions": "Sam decides the priority using a written priority list.",
+      "owners": [{ "match": "assigns", "text": "Nobody, the helpdesk system does it automatically." }],
+      "handoffs": [{ "match": "replies", "text": "The helpdesk system notifies Sam when a ticket is assigned." }, { "match": "marks", "text": "Sam does both steps." }],
+      "systems": [{ "match": "replies", "text": "The helpdesk system." }, { "match": "marks", "text": "The helpdesk system." }]
+    },
+    "expected_findings": [],
+    "ai_warranted": false
+  },
+  {
+    "id": "ev-06", "domain": "Auto repair shop, estimates",
+    "problem": "Customers keep calling to ask whether their car estimate is ready.",
+    "walkthrough": "The customer drops off the car and describes the problem to the service writer. The service writer writes the complaint on a paper repair order. A mechanic inspects the car and tells the service writer what it needs. The service writer types the estimate into the shop software and calls the customer for approval.",
+    "expected_steps": [{ "key": "writes the complaint" }, { "key": "inspects the car" }, { "key": "types the estimate" }],
+    "not_steps": ["drops off"],
+    "stated_dimensions": ["trigger"],
+    "answers": {
+      "trigger": "The customer drops off the car.",
+      "completion": "When the customer approves, we mark the repair order approved in the shop software.",
+      "exceptions": "If the customer doesn't pick up, we try again the next day, if someone remembers.",
+      "waiting": "We wait for the mechanic to finish the inspection, and then for the customer to approve.",
+      "decisions": "The mechanic decides what repairs are needed.",
+      "owners": [],
+      "handoffs": [{ "match": "types the estimate", "text": "The mechanic tells the service writer at the counter." }],
+      "systems": [{ "match": "writes the complaint", "text": "Paper repair order." }]
+    },
+    "expected_findings": [
+      { "category": "repeated_customer_followup", "status": "confirmed" },
+      { "category": "manual_reentry", "status": "confirmed" },
+      { "category": "information_loss", "status": "confirmed" },
+      { "category": "waiting_dependency", "status": "confirmed" },
+      { "category": "missing_exception_handling", "status": "confirmed" }
+    ],
+    "ai_warranted": false
+  },
+  {
+    "id": "ev-07", "domain": "Property management, maintenance requests",
+    "problem": "Tenants say maintenance requests disappear.",
+    "walkthrough": "Tenants text the property manager's personal phone when something breaks. She forwards the text to the maintenance contractor. The contractor schedules a visit with the tenant directly. I think the contractor usually sends an invoice when the job is done.",
+    "expected_steps": [{ "key": "forwards the text" }, { "key": "schedules a visit", "owner": "contractor" }, { "key": "sends an invoice", "owner": "contractor" }],
+    "not_steps": ["Tenants text"],
+    "stated_dimensions": ["trigger", "completion"],
+    "answers": {
+      "trigger": "Tenants text the property manager.",
+      "completion": "I'm not sure, the invoice is the only sign it's finished.",
+      "exceptions": "If the contractor never shows up, the tenant texts again and we start over.",
+      "waiting": "We wait on the contractor to get back to the tenant.",
+      "decisions": "The property manager decides which contractor to use.",
+      "confirm_by_dimension": { "completion": "I'm not sure." },
+      "owners": [{ "match": "forwards", "text": "The property manager." }],
+      "handoffs": [{ "match": "schedules", "text": "She forwards the text message." }, { "match": "invoice", "text": "I don't know." }],
+      "systems": [{ "match": "forwards", "text": "Her personal phone, by text message." }, { "match": "schedules", "text": "The contractor's own calendar." }]
+    },
+    "expected_findings": [
+      { "category": "information_loss", "status": "confirmed" },
+      { "category": "repeated_customer_followup", "status": "confirmed" },
+      { "category": "unstructured_intake", "status": "confirmed" },
+      { "category": "missing_terminal_condition", "status": "tentative" },
+      { "category": "waiting_dependency", "status": "confirmed" }
+    ],
+    "ai_warranted": true
+  },
+  {
+    "id": "ev-08", "domain": "Catering, event inquiries",
+    "problem": "We lose catering leads and I can't tell how many.",
+    "walkthrough": "Event planners email us asking for a catering quote. Dana reads the email and writes up a quote in Word. She sends the quote back by email. Then we wait to hear back. Nobody tracks which quotes were accepted.",
+    "expected_steps": [{ "key": "reads the email", "owner": "Dana" }, { "key": "sends the quote" }],
+    "not_steps": [],
+    "stated_dimensions": ["trigger", "waiting", "completion"],
+    "answers": {
+      "trigger": "Event planners email us.",
+      "completion": "Honestly nobody tracks it, so we never know which ones are finished.",
+      "exceptions": "If they don't reply, nothing happens.",
+      "decisions": "Dana decides the price per head.",
+      "waiting": "We wait for the planner to reply.",
+      "owners": [{ "match": "sends the quote", "text": "Dana." }],
+      "handoffs": [],
+      "systems": [{ "match": "reads", "text": "Email and Word." }]
+    },
+    "expected_findings": [
+      { "category": "missing_terminal_condition", "status": "confirmed" },
+      { "category": "missing_exception_handling", "status": "confirmed" },
+      { "category": "waiting_dependency", "status": "confirmed" },
+      { "category": "unstructured_intake", "status": "confirmed" },
+      { "category": "tool_switching", "status": "confirmed" }
+    ],
+    "ai_warranted": true
+  },
+  {
+    "id": "ev-09", "domain": "Law firm, potential client intake",
+    "problem": "Potential clients say we never called them back.",
+    "walkthrough": "People fill out the contact form on our website or call the front desk. The front desk writes phone inquiries in a paper log. Each afternoon the paralegal checks the website inquiries and the paper log. She sends the promising ones to an attorney. The attorney decides whether to take the case.",
+    "expected_steps": [{ "key": "writes phone inquiries", "owner": "front desk" }, { "key": "checks the website inquiries", "owner": "paralegal" }, { "key": "sends the promising ones" }, { "key": "decides whether to take the case" }],
+    "not_steps": ["People fill out"],
+    "stated_dimensions": ["trigger", "decisions"],
+    "answers": {
+      "completion": "I don't know, the attorney just calls them if we take the case.",
+      "exceptions": "If the attorney is busy, the inquiry waits in their email.",
+      "waiting": "We wait for the attorney to decide.",
+      "decisions": "The attorney decides whether to take the case.",
+      "owners": [{ "match": "sends the promising", "text": "The paralegal." }, { "match": "decides", "text": "The attorney." }],
+      "handoffs": [{ "match": "checks the website", "text": "She checks the log and the inbox every afternoon." }, { "match": "sends the promising", "text": "The paralegal does both." }, { "match": "decides", "text": "She emails the attorney." }],
+      "systems": [{ "match": "checks", "text": "The website inbox and the paper log." }, { "match": "sends the promising", "text": "Email." }, { "match": "decides", "text": "Email." }]
+    },
+    "expected_findings": [
+      { "category": "manual_status_checking", "status": "confirmed" },
+      { "category": "tool_switching", "status": "confirmed" },
+      { "category": "missing_terminal_condition", "status": "tentative" },
+      { "category": "waiting_dependency", "status": "confirmed" },
+      { "category": "unstructured_intake", "status": "confirmed" }
+    ],
+    "ai_warranted": true
+  },
+  {
+    "id": "ev-10", "domain": "Gym, membership cancellations",
+    "problem": "Members say they cancelled but kept getting charged.",
+    "walkthrough": "Members email the front desk to cancel. The front desk manager forwards the email to the owner. The owner cancels the membership in the billing system when he gets a chance. Sometimes that takes a week or two.",
+    "expected_steps": [{ "key": "forwards the email", "owner": "front desk" }, { "key": "cancels the membership", "owner": "owner" }],
+    "not_steps": ["Members email"],
+    "stated_dimensions": ["trigger"],
+    "answers": {
+      "completion": "When the owner cancels it in the billing system.",
+      "exceptions": "If the owner forgets, the member gets charged again and emails us angry.",
+      "waiting": "The cancellation waits until the owner gets to it.",
+      "decisions": "The owner decides whether to refund the extra charge.",
+      "owners": [],
+      "handoffs": [{ "match": "cancels the membership", "text": "The front desk manager forwards the email to him." }],
+      "systems": [{ "match": "forwards", "text": "Email." }, { "match": "cancels", "text": "The billing system." }]
+    },
+    "expected_findings": [
+      { "category": "bottleneck", "status": "confirmed" },
+      { "category": "repeated_customer_followup", "status": "confirmed" },
+      { "category": "missing_exception_handling", "status": "confirmed" },
+      { "category": "waiting_dependency", "status": "confirmed" }
+    ],
+    "ai_warranted": false
+  },
+  {
+    "id": "ev-11", "domain": "Print shop, proof approvals",
+    "problem": "Print jobs get delayed waiting for proof approval.",
+    "walkthrough": "The customer uploads artwork through our online order form. Kim creates a proof and emails it to the customer. We wait for the customer to reply with approval. Once approved, Kim sends the job to the printer queue. When the order is picked up we mark it complete in the order system.",
+    "expected_steps": [{ "key": "creates a proof", "owner": "Kim" }, { "key": "sends the job", "owner": "Kim" }, { "key": "mark it complete" }],
+    "not_steps": [],
+    "stated_dimensions": ["trigger", "waiting", "completion"],
+    "answers": {
+      "trigger": "Customers upload artwork through our online order form.",
+      "completion": "We mark it complete in the order system when it is picked up.",
+      "exceptions": "If the customer doesn't reply, Kim emails them again after two days.",
+      "waiting": "We wait for the customer to approve the proof.",
+      "decisions": "Kim decides if the artwork is print-ready.",
+      "owners": [],
+      "handoffs": [{ "match": "sends the job", "text": "Kim does both." }, { "match": "mark it complete", "text": "The printer queue shows finished jobs to whoever is at the counter." }],
+      "systems": [{ "match": "creates a proof", "text": "Design software and email." }, { "match": "sends the job", "text": "The printer queue." }]
+    },
+    "expected_findings": [
+      { "category": "waiting_dependency", "status": "confirmed" }
+    ],
+    "ai_warranted": false
+  },
+  {
+    "id": "ev-12", "domain": "HVAC company, service calls (hedged answers)",
+    "problem": "I think we might be missing some service calls but I'm not sure.",
+    "walkthrough": "I think most calls come in through the answering service. The answering service probably emails a summary to our dispatcher. The dispatcher usually adds the job to the schedule board. A technician picks it up from the board.",
+    "expected_steps": [{ "key": "emails a summary" }, { "key": "adds the job", "owner": "dispatcher" }, { "key": "picks it up", "owner": "technician" }],
+    "not_steps": [],
+    "stated_dimensions": ["trigger"],
+    "answers": {
+      "trigger": "Calls come in through the answering service.",
+      "completion": "I'm not sure how we know a job is finished.",
+      "exceptions": "Honestly I don't know what happens if no technician picks it up.",
+      "waiting": "Maybe we wait on parts sometimes.",
+      "decisions": "The dispatcher decides priority, I think.",
+      "confirm_by_dimension": { "waiting": "I'm not sure.", "decisions": "I'm not sure." },
+      "owners": [],
+      "handoffs": [{ "match": "adds the job", "text": "I think the answering service emails the dispatcher." }, { "match": "picks it up", "text": "The technician checks the board in the morning." }],
+      "systems": [{ "match": "adds the job", "text": "A whiteboard." }, { "match": "picks it up", "text": "The whiteboard." }]
+    },
+    "expected_findings": [
+      { "category": "missing_terminal_condition", "status": "tentative" },
+      { "category": "missing_exception_handling", "status": "tentative" },
+      { "category": "manual_status_checking", "status": "confirmed" },
+      { "category": "waiting_dependency", "status": "tentative" }
+    ],
+    "ai_warranted": false
+  },
+  {
+    "id": "ev-13", "domain": "Design studio, project requests (healthy)",
+    "problem": "Checking that our project request process is solid.",
+    "walkthrough": "Clients submit project requests through our intake form, which creates a card in Trello. Every Monday the studio lead reviews new cards and assigns each one to a designer. The designer moves the card to Done when the client signs off.",
+    "expected_steps": [{ "key": "reviews new cards" }, { "key": "moves the card to Done" }],
+    "not_steps": [],
+    "stated_dimensions": ["trigger", "completion", "ownership"],
+    "answers": {
+      "completion": "When the client signs off, the designer moves the card to Done.",
+      "exceptions": "If a card sits in review for more than a week, Trello alerts the studio lead.",
+      "waiting": "We wait for client feedback, and Trello reminds the designer after three days.",
+      "decisions": "The studio lead decides who takes each project based on workload.",
+      "owners": [{ "match": "reviews", "text": "The studio lead." }, { "match": "moves", "text": "The assigned designer." }],
+      "handoffs": [{ "match": "moves", "text": "The studio lead assigns the card in Trello, which notifies the designer." }],
+      "systems": [{ "match": "reviews", "text": "Trello." }, { "match": "moves", "text": "Trello." }]
+    },
+    "expected_findings": [],
+    "ai_warranted": false
+  },
+  {
+    "id": "ev-14", "domain": "Restaurant, supplier reorders",
+    "problem": "We run out of ingredients even though we reorder every week.",
+    "walkthrough": "The chef counts the walk-in fridge on Sunday night. He writes what's low on a clipboard. On Monday the manager types the list into an email to the supplier. The supplier delivers on Wednesday.",
+    "expected_steps": [{ "key": "counts the walk-in" }, { "key": "writes what's low" }, { "key": "types the list", "owner": "manager" }, { "key": "delivers on Wednesday" }],
+    "not_steps": [],
+    "stated_dimensions": ["trigger"],
+    "answers": {
+      "trigger": "Every Sunday night the chef counts inventory.",
+      "completion": "When the delivery arrives we just put it away; nobody checks it against the order.",
+      "exceptions": "If the supplier shorts us, we don't find out until we run out.",
+      "waiting": "We wait for the Wednesday delivery.",
+      "decisions": "The chef decides the quantities by feel.",
+      "owners": [{ "match": "writes", "text": "The chef." }],
+      "handoffs": [{ "match": "types the list", "text": "The chef leaves the clipboard on the manager's desk." }],
+      "systems": [{ "match": "writes", "text": "A clipboard." }, { "match": "types", "text": "Email." }]
+    },
+    "expected_findings": [
+      { "category": "manual_reentry", "status": "confirmed" },
+      { "category": "inconsistent_decision", "status": "confirmed" },
+      { "category": "missing_exception_handling", "status": "confirmed" },
+      { "category": "waiting_dependency", "status": "confirmed" }
+    ],
+    "ai_warranted": false
+  },
+  {
+    "id": "ev-15", "domain": "Veterinary clinic, prescription refills",
+    "problem": "Clients complain refill requests take days.",
+    "walkthrough": "Clients call and leave a refill request on the voicemail line. A technician listens to the voicemails twice a day and enters each request into the practice software. The vet reviews and approves refills at the end of the day. Then the front desk calls the client when it's ready.",
+    "expected_steps": [{ "key": "enters each request", "owner": "technician" }, { "key": "approves refills" }, { "key": "calls the client", "owner": "front desk" }],
+    "not_steps": ["Clients call"],
+    "stated_dimensions": ["trigger", "decisions"],
+    "answers": {
+      "trigger": "Clients call and leave a voicemail.",
+      "completion": "When the client picks up the medication, the front desk marks it picked up in the software.",
+      "exceptions": "If the vet is out, refills wait until they're back.",
+      "waiting": "Requests wait for the end-of-day review.",
+      "decisions": "The vet approves each refill.",
+      "owners": [{ "match": "approves", "text": "The vet on duty." }],
+      "handoffs": [{ "match": "approves", "text": "The requests show up in the vet's queue in the practice software." }, { "match": "calls the client", "text": "The software flags approved refills for the front desk." }],
+      "systems": [{ "match": "approves", "text": "The practice software." }, { "match": "calls the client", "text": "Phone." }]
+    },
+    "expected_findings": [
+      { "category": "manual_reentry", "status": "confirmed" },
+      { "category": "unstructured_intake", "status": "confirmed" },
+      { "category": "bottleneck", "status": "confirmed" },
+      { "category": "waiting_dependency", "status": "confirmed" },
+      { "category": "single_point_of_failure", "status": "confirmed" }
+    ],
+    "ai_warranted": true
+  },
+  {
+    "id": "ev-16", "domain": "Cleaning company, job scheduling",
+    "problem": "Double bookings keep happening.",
+    "walkthrough": "Customers book by phone or through our booking page. Rosa writes phone bookings into the paper calendar. Online bookings go into the booking system. Every evening Rosa copies the online bookings into the paper calendar too. The crews check the paper calendar each morning.",
+    "expected_steps": [{ "key": "writes phone bookings", "owner": "Rosa" }, { "key": "copies the online bookings", "owner": "Rosa" }, { "key": "check the paper calendar" }],
+    "not_steps": ["Customers book"],
+    "stated_dimensions": ["trigger"],
+    "answers": {
+      "trigger": "Customers book by phone or on our booking page.",
+      "completion": "When the crew finishes, they tell Rosa and she crosses it off.",
+      "exceptions": "If there's a double booking, whoever finds it calls the customer to reschedule.",
+      "waiting": "No waiting really.",
+      "decisions": "Rosa decides which crew gets which job.",
+      "owners": [],
+      "handoffs": [{ "match": "copies the online", "text": "Rosa does both." }, { "match": "check the paper", "text": "The crews read the calendar in the office." }],
+      "systems": [{ "match": "check", "text": "The paper calendar." }]
+    },
+    "expected_findings": [
+      { "category": "duplicate_work", "status": "confirmed" },
+      { "category": "manual_reentry", "status": "confirmed" },
+      { "category": "unclear_ownership", "status": "confirmed" },
+      { "category": "single_point_of_failure", "status": "tentative" },
+      { "category": "manual_status_checking", "status": "confirmed" }
+    ],
+    "ai_warranted": false
+  },
+  {
+    "id": "ev-17", "domain": "Event venue, booking inquiries (healthy)",
+    "problem": "We want to make sure our booking process has no gaps.",
+    "walkthrough": "Couples submit an inquiry through our booking form, which creates a lead in our CRM. The CRM assigns the lead to the events coordinator, Nora. Nora replies within 24 hours and schedules a tour. After the tour, Nora sends the contract through the CRM. The lead is marked won or lost in the CRM when the couple signs or declines.",
+    "expected_steps": [{ "key": "assigns the lead" }, { "key": "replies within 24 hours", "owner": "Nora" }, { "key": "sends the contract", "owner": "Nora" }, { "key": "marked won or lost" }],
+    "not_steps": [],
+    "stated_dimensions": ["trigger", "completion", "ownership"],
+    "answers": {
+      "completion": "The lead is marked won or lost in the CRM when the couple signs or declines.",
+      "exceptions": "If a lead gets no reply in 24 hours, the CRM alerts the venue manager.",
+      "waiting": "We wait for the couple to sign; the CRM sends reminders after three days.",
+      "decisions": "Nora decides tour times based on the calendar.",
+      "owners": [{ "match": "assigns", "text": "Nobody, the CRM does it automatically." }, { "match": "marked won", "text": "Nora." }],
+      "handoffs": [{ "match": "replies", "text": "The CRM notifies Nora when a lead is assigned." }],
+      "systems": [{ "match": "replies", "text": "The CRM." }, { "match": "sends the contract", "text": "The CRM." }, { "match": "marked", "text": "The CRM." }]
+    },
+    "expected_findings": [],
+    "ai_warranted": false
+  },
+  {
+    "id": "ev-18", "domain": "Insurance agency, claim help",
+    "problem": "Clients feel ignored after they report a claim to us.",
+    "walkthrough": "Clients call their agent to report a claim. The agent emails the claim details to our service assistant, Ben. Ben re-enters everything into the carrier's claims portal. The carrier takes it from there and we don't really hear back.",
+    "expected_steps": [{ "key": "emails the claim details" }, { "key": "re-enters everything", "owner": "Ben" }],
+    "not_steps": ["Clients call"],
+    "stated_dimensions": ["trigger"],
+    "answers": {
+      "trigger": "Clients call their agent.",
+      "completion": "Honestly we don't know when a claim is finished; the carrier doesn't tell us.",
+      "exceptions": "If the carrier needs more information, the client calls us asking what's going on.",
+      "waiting": "We wait on the carrier.",
+      "decisions": "No real decisions on our side.",
+      "owners": [],
+      "handoffs": [{ "match": "re-enters", "text": "The agent emails Ben." }],
+      "systems": [{ "match": "re-enters", "text": "Email and the carrier's portal." }]
+    },
+    "expected_findings": [
+      { "category": "manual_reentry", "status": "confirmed" },
+      { "category": "missing_terminal_condition", "status": "confirmed" },
+      { "category": "repeated_customer_followup", "status": "confirmed" },
+      { "category": "waiting_dependency", "status": "confirmed" },
+      { "category": "tool_switching", "status": "confirmed" }
+    ],
+    "ai_warranted": false
+  },
+  {
+    "id": "ev-19", "domain": "Tutoring service, sign-ups",
+    "problem": "Parents sign up for tutoring but some never get matched with a tutor.",
+    "walkthrough": "Parents fill out a sign-up form on our website. The form adds a row to a Google Sheet. Our coordinator, Aisha, checks the sheet on Fridays and matches students with tutors. She emails the tutor and the parent to introduce them.",
+    "expected_steps": [{ "key": "adds a row" }, { "key": "checks the sheet", "owner": "coordinator" }, { "key": "emails the tutor" }],
+    "not_steps": ["Parents fill out"],
+    "stated_dimensions": ["trigger"],
+    "answers": {
+      "completion": "I'm not sure; I guess once the intro email goes out we consider it done.",
+      "exceptions": "If Aisha misses a row, the family just never hears from us.",
+      "waiting": "Families wait until Friday to be matched.",
+      "decisions": "Aisha decides the match based on subject and schedule.",
+      "owners": [{ "match": "adds a row", "text": "Nobody, it is automatic." }, { "match": "emails the tutor", "text": "Aisha." }],
+      "handoffs": [{ "match": "checks the sheet", "text": "Aisha just checks the sheet on Fridays." }, { "match": "emails the tutor", "text": "Aisha does it herself." }],
+      "systems": [{ "match": "emails the tutor", "text": "Email." }]
+    },
+    "expected_findings": [
+      { "category": "manual_status_checking", "status": "confirmed" },
+      { "category": "missing_exception_handling", "status": "confirmed" },
+      { "category": "waiting_dependency", "status": "confirmed" },
+      { "category": "missing_terminal_condition", "status": "tentative" }
+    ],
+    "ai_warranted": false
+  },
+  {
+    "id": "ev-20", "domain": "Online store, returns (healthy)",
+    "problem": "Checking whether our returns process has gaps.",
+    "walkthrough": "Customers start a return through the returns page on our store. The store emails them a prepaid label automatically. When the package arrives, the warehouse lead inspects it and marks the return received in the store admin. The store issues the refund automatically once the return is marked received.",
+    "expected_steps": [{ "key": "emails them a prepaid label" }, { "key": "marks the return received" }, { "key": "issues the refund" }],
+    "not_steps": [],
+    "stated_dimensions": ["trigger", "completion"],
+    "answers": {
+      "completion": "It is finished when the refund is issued, which the store records automatically.",
+      "exceptions": "If a package is lost, the store alerts the support team after 14 days.",
+      "waiting": "We wait for the package to arrive, and the store tracks it.",
+      "decisions": "The warehouse lead decides whether the item can be restocked, using a written checklist.",
+      "owners": [{ "match": "emails them", "text": "Nobody, it is automatic." }, { "match": "marks the return", "text": "The warehouse lead." }],
+      "handoffs": [{ "match": "marks the return", "text": "The carrier tracking marks it delivered and the warehouse lead sees it in the store admin." }],
+      "systems": [{ "match": "marks", "text": "The store admin." }]
+    },
+    "expected_findings": [],
+    "ai_warranted": false
+  }
+]
