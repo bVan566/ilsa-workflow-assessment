@@ -24,7 +24,10 @@ const YES = /^\s*(yes|yep|yeah|yup|correct|right|that'?s right|exactly|always|th
 const AMBIGUOUS_OWNER = /\b(whoever( [a-z]+){0,3}|someone|somebody|anyone|one of us|we all)\b/i;
 const ROLE = /\b(the )?(owner|office manager|manager|receptionist|admin(istrator)?|assistant|technicians?|techs?|salesperson|sales ?reps?|sales team|estimators?|dispatcher|bookkeeper|coordinator|project manager|front desk|crew lead|foreman)\b/i;
 const NOT_NAMES = new Set(['then', 'after', 'when', 'if', 'the', 'we', 'they', 'it', 'she', 'he', 'our', 'that', 'this', 'so', 'and', 'but',
-  'once', 'next', 'first', 'finally', 'usually', 'sometimes', 'someone', 'nobody', 'everyone', 'inquiries', 'leads', 'customers', 'i']);
+  'once', 'next', 'first', 'finally', 'usually', 'sometimes', 'someone', 'nobody', 'everyone', 'inquiries', 'leads', 'customers', 'i',
+  // interjections and openers that start answers but are not people
+  'well', 'honestly', 'actually', 'basically', 'yes', 'yeah', 'no', 'okay', 'ok', 'um', 'uh', 'hmm', 'there', 'those', 'these',
+  'depends', 'mostly', 'probably', 'maybe', 'not', 'none', 'nothing', 'each', 'every', 'all', 'most', 'some', 'in', 'on', 'at', 'for']);
 
 const SYSTEMS: [RegExp, string][] = [
   [/\b(web ?site|web ?form|contact form|online form)\b/i, 'website form'],

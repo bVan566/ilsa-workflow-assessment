@@ -173,6 +173,67 @@ export interface Assessment {
   updated_at: string;
 }
 
+// ---------------------------------------------------------------- report (the assessment output)
+
+export const INTERVENTIONS = ['process_change', 'existing_tool_change', 'simple_automation', 'ai_assisted'] as const;
+export type Intervention = (typeof INTERVENTIONS)[number];
+
+/**
+ * act          supported by at least one confirmed (or human-accepted) finding
+ * investigate  supported only by tentative findings: "confirm this first", never a fix to go and build
+ */
+export type RecommendationKind = 'act' | 'investigate';
+
+export interface Recommendation {
+  id: string;                 // R1, R2, ...
+  finding_ids: string[];      // must be non-empty: no orphan recommendations
+  kind: RecommendationKind;
+  intervention: Intervention; // for "investigate", the kind of fix it would likely lead to
+  title: string;
+  detail: string;
+  ai_reason: string | null;   // required for ai_assisted: why interpretation, generation or ambiguity needs AI
+  why_not_ai: string | null;  // for other types: why ordinary process or software is enough
+}
+
+export interface FactView {
+  value: string | null;
+  certainty: Certainty;
+  evidence_ids: string[];
+}
+
+export interface CurrentState {
+  trigger: FactView;
+  steps: {
+    id: string; summary: string; owner: FactView; system: FactView; handoff_in: FactView; waiting_on: FactView;
+    manual: boolean | null; decision: boolean | null; evidence_ids: string[];
+  }[];
+  completion: FactView;
+  exceptions: FactView;
+  decisions: FactView;
+  waiting: FactView;
+}
+
+export interface ReportFinding {
+  id: string;
+  category: FrictionCategory;
+  step_ids: string[];
+  status: FindingStatus;
+  rationale: string;
+  support: string;
+  evidence: EvidenceRef[];
+}
+
+/** The assessment. Four separate sections; diagnosis is never mixed with recommendation. */
+export interface Report {
+  assessment_id: string;
+  based_on_revision: number;
+  generated_at: string;
+  current_state: CurrentState;
+  observed_friction: { confirmed: ReportFinding[]; needs_confirmation: ReportFinding[] };
+  unknowns: { dimension: Dimension; slot: string; kind: string; description: string }[];
+  recommendations: Recommendation[];
+}
+
 export function emptyFact(): Fact {
   return { value: null, status: 'unknown', evidence: [] };
 }

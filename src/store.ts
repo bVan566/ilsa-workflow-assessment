@@ -1,7 +1,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import {
   DIMENSIONS, emptyWorkflow,
-  type Assessment, type AssessmentStatus, type Dimension, type Evidence, type EvidenceKind, type Model, type Question,
+  type Assessment, type AssessmentStatus, type Dimension, type Evidence, type EvidenceKind, type Model, type Question, type Report,
 } from './domain.ts';
 import { ValidationError, validateModel } from './validate.ts';
 
@@ -84,6 +84,14 @@ export class Store {
         details_json TEXT NOT NULL DEFAULT '[]',
         created_at TEXT NOT NULL,
         PRIMARY KEY (assessment_id, revision)
+      );
+      CREATE TABLE IF NOT EXISTS reports (
+        assessment_id TEXT NOT NULL REFERENCES assessments(id),
+        seq INTEGER NOT NULL,
+        based_on_revision INTEGER NOT NULL,
+        report_json TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        PRIMARY KEY (assessment_id, seq)
       );
     `);
   }
@@ -239,6 +247,27 @@ export class Store {
     const rows = this.db.prepare('SELECT revision, reason, actor, details_json, created_at FROM revisions WHERE assessment_id = ? ORDER BY revision')
       .all(id) as unknown as (Omit<RevisionInfo, 'details'> & { details_json: string })[];
     return rows.map(({ details_json, ...r }) => ({ ...r, details: JSON.parse(details_json) as string[] }));
+  }
+
+  // ---------------------------------------------------------------- reports
+
+  /** Stores a generated assessment. Earlier reports are kept, so regeneration is traceable. */
+  saveReport(id: string, report: Report): number {
+    this.get(id);
+    const n = Number((this.db.prepare('SELECT COUNT(*) AS n FROM reports WHERE assessment_id = ?').get(id) as { n: number }).n) + 1;
+    this.db.prepare('INSERT INTO reports (assessment_id, seq, based_on_revision, report_json, created_at) VALUES (?, ?, ?, ?, ?)')
+      .run(id, n, report.based_on_revision, JSON.stringify(report), this.ts());
+    return n;
+  }
+
+  latestReport(id: string): { seq: number; report: Report } | null {
+    const row = this.db.prepare('SELECT seq, report_json FROM reports WHERE assessment_id = ? ORDER BY seq DESC LIMIT 1').get(id) as
+      { seq: number; report_json: string } | undefined;
+    return row ? { seq: Number(row.seq), report: JSON.parse(row.report_json) as Report } : null;
+  }
+
+  reportCount(id: string): number {
+    return Number((this.db.prepare('SELECT COUNT(*) AS n FROM reports WHERE assessment_id = ?').get(id) as { n: number }).n);
   }
 
   // ---------------------------------------------------------------- ids assigned by code
