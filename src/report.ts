@@ -81,6 +81,9 @@ export function validateReport(report: Report, model: Model, revision: number): 
     if (bad.length) errors.push(`${p} cites findings that are missing, rejected or disputed: ${bad.join(', ')}`);
     const strong = backing.some((f) => f && (f.status === 'confirmed' || f.status === 'user_accepted'));
     if (r.kind === 'act' && !strong) errors.push(`${p} recommends action but is backed only by tentative findings; it can only be "investigate"`);
+    if (r.kind === 'act' && backing.some((f) => f?.status === 'tentative')) {
+      errors.push(`${p} recommends action but also cites tentative findings; tentative findings may only back "investigate"`);
+    }
     if (!['act', 'investigate'].includes(r.kind)) errors.push(`${p} kind "${r.kind}" is invalid`);
     if (!INTERVENTIONS.includes(r.intervention)) errors.push(`${p} intervention "${r.intervention}" is invalid`);
     if (r.intervention === 'ai_assisted' && !(typeof r.ai_reason === 'string' && r.ai_reason.trim().length >= 30)) {

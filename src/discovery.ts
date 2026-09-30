@@ -1,6 +1,6 @@
 import type { Assessment, Evidence, Question } from './domain.ts';
 import { diagnose, type FindingProposal } from './friction.ts';
-import { candidates, coverage, factState, nextQuestion, sequenceConfirmed, type Candidate } from './gaps.ts';
+import { candidates, coverage, factState, nextQuestion, sequenceConfirmed, WHY, WHY_CONFIRM, type Candidate } from './gaps.ts';
 import { HeuristicInterpreter } from './interpret/heuristic.ts';
 import type { Interpreter } from './interpret/types.ts';
 import { applyDelta, getFact } from './merge.ts';
@@ -108,7 +108,10 @@ export class Discovery {
     const a = this.store.get(id);
     const c: Candidate | null = nextQuestion(a.model, a.questions);
     if (!c) return null;
-    return this.store.addQuestion(id, { dimension: c.dimension, slot: c.slot, intent: c.intent, text: c.text, step_id: c.step?.id ?? null });
+    return this.store.addQuestion(id, {
+      dimension: c.dimension, slot: c.slot, intent: c.intent, text: c.text, step_id: c.step?.id ?? null,
+      why: c.intent === 'confirm' && c.slot !== 'sequence' ? WHY_CONFIRM : WHY[c.dimension], reason: c.reason,
+    });
   }
 
   private async interpretAndSave(id: string, evidence: Evidence, question: Question | null): Promise<Interpretation> {

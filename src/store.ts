@@ -71,6 +71,8 @@ export class Store {
         intent TEXT NOT NULL,
         text TEXT NOT NULL,
         step_id TEXT,
+        why TEXT NOT NULL DEFAULT '',
+        reason TEXT NOT NULL DEFAULT '',
         status TEXT NOT NULL,
         answer_evidence_id TEXT,
         created_at TEXT NOT NULL,
@@ -180,22 +182,22 @@ export class Store {
 
   // ---------------------------------------------------------------- questions
 
-  addQuestion(id: string, q: { dimension: Dimension; slot: string; intent: Question['intent']; text: string; step_id?: string | null }): Question {
+  addQuestion(id: string, q: { dimension: Dimension; slot: string; intent: Question['intent']; text: string; step_id?: string | null; why?: string; reason?: string }): Question {
     this.get(id);
     if (!DIMENSIONS.includes(q.dimension)) throw new ValidationError([`unknown dimension "${q.dimension}"`]);
     const n = Number((this.db.prepare('SELECT COUNT(*) AS n FROM questions WHERE assessment_id = ?').get(id) as { n: number }).n);
     const question: Question = {
       id: `Q${n + 1}`, dimension: q.dimension, slot: q.slot, intent: q.intent, text: requireText(q.text, 'question', 1000),
-      step_id: q.step_id ?? null, status: 'open', answer_evidence_id: null, created_at: this.ts(),
+      step_id: q.step_id ?? null, why: q.why ?? '', reason: q.reason ?? '', status: 'open', answer_evidence_id: null, created_at: this.ts(),
     };
-    this.db.prepare(`INSERT INTO questions (assessment_id, id, dimension, slot, intent, text, step_id, status, answer_evidence_id, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'open', NULL, ?)`)
-      .run(id, question.id, question.dimension, question.slot, question.intent, question.text, question.step_id, question.created_at);
+    this.db.prepare(`INSERT INTO questions (assessment_id, id, dimension, slot, intent, text, step_id, why, reason, status, answer_evidence_id, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', NULL, ?)`)
+      .run(id, question.id, question.dimension, question.slot, question.intent, question.text, question.step_id, question.why ?? '', question.reason ?? '', question.created_at);
     return question;
   }
 
   questions(id: string): Question[] {
-    return this.db.prepare(`SELECT id, dimension, slot, intent, text, step_id, status, answer_evidence_id, created_at FROM questions
+    return this.db.prepare(`SELECT id, dimension, slot, intent, text, step_id, why, reason, status, answer_evidence_id, created_at FROM questions
       WHERE assessment_id = ? ORDER BY CAST(SUBSTR(id, 2) AS INTEGER)`).all(id) as unknown as Question[];
   }
 

@@ -170,6 +170,8 @@ export interface Question {
   intent: 'discover' | 'confirm';
   text: string;
   step_id: string | null;   // when the question is about one step
+  why?: string;             // plain-language reason this matters
+  reason?: string;          // why it was ranked first (weight x uncertainty)
   status: 'open' | 'answered' | 'skipped';
   answer_evidence_id: string | null;
   created_at: string;

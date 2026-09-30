@@ -149,21 +149,27 @@ export function buildRecommendations(model: Model, findings: Finding[]): Recomme
   const recs: Omit<Recommendation, 'id'>[] = [];
   for (const [category, fs] of byCategory) {
     const entry = CATALOG[category];
-    const actionable = fs.some((f) => ACTIONABLE.has(f.status));
-    const steps = [...new Set(fs.flatMap((f) => f.step_ids))];
-    recs.push(actionable
-      ? {
-          finding_ids: fs.map((f) => f.id), kind: 'act', intervention: entry.intervention, title: entry.title,
-          detail: `${entry.detail}${steps.length ? ` (Applies to ${steps.join(', ')}.)` : ''}`, ai_reason: null, why_not_ai: entry.why_not_ai,
-        }
-      : {
-          finding_ids: fs.map((f) => f.id), kind: 'investigate', intervention: entry.intervention,
-          title: `Confirm first: ${fs[0].support}`,
-          detail: `This rests on unconfirmed information. Check it with the people involved before changing anything. If it is confirmed, the likely fix is: ${entry.title.toLowerCase()}.`,
-          ai_reason: null, why_not_ai: entry.why_not_ai,
-        });
+    // Action is traced only to confirmed / accepted findings. Tentative findings in the same
+    // category get their own "confirm first" recommendation; they never borrow credibility.
+    const actionable = fs.filter((f) => ACTIONABLE.has(f.status));
+    const tentative = fs.filter((f) => f.status === 'tentative');
+    if (actionable.length) {
+      const steps = [...new Set(actionable.flatMap((f) => f.step_ids))];
+      recs.push({
+        finding_ids: actionable.map((f) => f.id), kind: 'act', intervention: entry.intervention, title: entry.title,
+        detail: `${entry.detail}${steps.length ? ` (Applies to ${steps.join(', ')}.)` : ''}`, ai_reason: null, why_not_ai: entry.why_not_ai,
+      });
+    }
+    for (const t of tentative) {
+      recs.push({
+        finding_ids: [t.id], kind: 'investigate', intervention: entry.intervention,
+        title: `Confirm first: ${t.support}`,
+        detail: `This rests on unconfirmed information. Check it with the people involved before changing anything. If it is confirmed, the likely fix is: ${entry.title.toLowerCase()}.`,
+        ai_reason: null, why_not_ai: entry.why_not_ai,
+      });
+    }
     if (category === 'unstructured_intake') {
-      const ai = aiIntakeRecommendation(model, fs[0]);
+      const ai = aiIntakeRecommendation(model, actionable[0] ?? tentative[0]);
       if (ai) recs.push(ai);
     }
   }

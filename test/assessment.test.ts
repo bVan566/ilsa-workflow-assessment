@@ -175,6 +175,7 @@ describe('recommendation rules', () => {
       assert.match(errs(report([rec({ finding_ids: ['F4'] })])), /missing, rejected or disputed: F4/);
     });
     it('"act" backed only by tentative findings', () => assert.match(errs(report([rec({ finding_ids: ['F2'] })])), /can only be "investigate"/));
+    it('"act" that mixes in a tentative finding', () => assert.match(errs(report([rec({ finding_ids: ['F1', 'F2'] })])), /also cites tentative/));
     it('AI-assisted without a reason', () => assert.match(errs(report([rec({ intervention: 'ai_assisted', ai_reason: 'AI is good.' })])), /does not explain why/));
     it('an AI reason on a non-AI recommendation', () => assert.match(errs(report([rec({ ai_reason: 'because language is ambiguous and varies' })])), /carries an AI reason/));
     it('a tentative finding listed as confirmed friction', () => {

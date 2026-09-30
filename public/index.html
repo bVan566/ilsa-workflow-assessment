@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ilsa Workflow Assessment</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div>
+      <h1>Ilsa <span class="muted">· workflow assessment</span></h1>
+      <p class="sub">Understand before recommending: discover how the work actually moves, then diagnose, then recommend.</p>
+    </div>
+    <div class="top-actions">
+      <button id="new-btn" class="primary">New assessment</button>
+      <button id="sample-guided">Try the sample (guided)</button>
+      <button id="sample-complete">Load finished sample</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="sidebar" aria-label="Assessments">
+      <h2>Assessments</h2>
+      <ul id="list" class="list"></ul>
+    </nav>
+    <main id="main" class="main"></main>
+  </div>
+
+  <dialog id="new-dialog">
+    <form method="dialog" id="new-form">
+      <h2>New assessment</h2>
+      <label for="new-name">Which process?</label>
+      <input id="new-name" required maxlength="200" placeholder="e.g. New customer inquiry">
+      <label for="new-problem">What is going wrong, in your own words?</label>
+      <textarea id="new-problem" required rows="4" maxlength="5000" placeholder="e.g. We keep losing new customer inquiries and I don't know why."></textarea>
+      <p class="hint">Ilsa will not recommend anything yet. It will ask questions until it understands how the work moves.</p>
+      <div class="row end">
+        <button value="cancel" formnovalidate>Cancel</button>
+        <button value="ok" class="primary">Start discovery</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>

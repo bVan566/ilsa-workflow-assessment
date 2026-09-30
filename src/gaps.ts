@@ -16,6 +16,20 @@ export const WEIGHTS = {
 } as const;
 type SlotKind = keyof typeof WEIGHTS;
 
+/** Plain-language reason each dimension matters, shown next to the question. */
+export const WHY: Record<Dimension, string> = {
+  steps: 'Everything else (owners, handoffs, delays) hangs off the list of steps.',
+  trigger: 'Where work enters decides what information you start with.',
+  completion: 'Without a clear finish point, finished, abandoned and forgotten work all look the same.',
+  ownership: 'Steps without a clear owner are where work stalls without anyone noticing.',
+  exceptions: 'Work is usually lost on the path nobody designed: what happens when something goes wrong.',
+  handoffs: 'Handoffs are where details and responsibility get dropped.',
+  waiting: 'Waiting is where work stalls unless something prompts the next action.',
+  decisions: 'Judgment calls made differently by different people make outcomes unpredictable.',
+  systems: 'Knowing the tools shows where information is retyped or scattered.',
+};
+export const WHY_CONFIRM = 'You said this with some uncertainty. Ilsa will not treat it as fact until you confirm it.';
+
 /** Tie-break order when scores are equal: foundational dimensions first, then process order. */
 const ORDER: SlotKind[] = ['sequence', 'trigger', 'completion', 'owner', 'exceptions', 'handoff_in', 'waiting', 'decisions', 'system'];
 
