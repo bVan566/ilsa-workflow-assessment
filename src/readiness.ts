@@ -1,5 +1,5 @@
 import type { Dimension, Fact, Model, Question } from './domain.ts';
-import { factState, handoffSteps, sequenceConfirmed } from './gaps.ts';
+import { factState, handoffSteps, sequenceConfirmed, userSaysUnknown } from './gaps.ts';
 import { isDontKnow } from './language.ts';
 
 // The readiness gate: "understand before recommending", enforced in code.
@@ -79,7 +79,7 @@ export function readiness(model: Model, questions: Question[]): Readiness {
     const skipped = questions.some((q) => q.slot === s.slot && q.status === 'skipped');
     if (state === 'established') continue;
 
-    if (state === 'unresolved' && s.fact.evidence.some((r) => isDontKnow(r.quote))) {
+    if (state === 'unresolved' && userSaysUnknown(s.fact, isDontKnow)) {
       unknowns.push({ dimension: s.dimension, slot: s.slot, kind: 'user_does_not_know', description: `Nobody could say ${s.label}.` });
       continue;
     }

@@ -69,6 +69,10 @@ function mergeFact(model: Model, slot: string, p: FactProposal, evidence: Eviden
     out.dropped.push(`${slot}: no such field`);
     return;
   }
+  if (current.by === 'user') {
+    out.dropped.push(`${slot}: set by the user during review; the interpreter cannot change it`);
+    return;
+  }
   const next = vet(p, evidence);
   if (typeof next === 'string') {
     out.dropped.push(`${slot}: ${next}`);
@@ -138,6 +142,22 @@ export function applyDelta(
     }
     if (existing.has(sp.summary.trim().toLowerCase())) {
       out.dropped.push(`new step "${sp.summary}": already in the model`);
+      continue;
+    }
+    // A restatement of an existing step ("…, like I said") is the same step: its details are
+    // proposed as updates to that step instead of creating a duplicate.
+    const norm = (t: string) => t.toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+    const same = out.model.workflow.steps.find((s) => {
+      const a = norm(s.summary);
+      const b = norm(sp.summary);
+      return a.length >= 12 && b.length >= 12 && (a.includes(b) || b.includes(a));
+    });
+    if (same) {
+      out.applied.push(`"${sp.summary}" restates ${same.id}; treated as the same step`);
+      for (const field of STEP_FACTS) {
+        const p = sp[field];
+        if (p) mergeFact(out.model, `${same.id}.${field}`, p, evidence, false, out);
+      }
       continue;
     }
     const step = newStep(nextStepId(), sp.summary.trim(), sp.evidence);

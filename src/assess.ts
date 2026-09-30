@@ -53,14 +53,33 @@ export class Assessor {
     return { ok: true, report, seq };
   }
 
-  /** The latest report, and whether the model has changed since it was generated. */
-  current(id: string): { report: Report | null; stale: boolean; readiness: Readiness } {
+  /**
+   * The ACTIVE assessment is the latest report only while it matches the current model.
+   * After a correction it is either regenerated (see refresh) or no longer active:
+   * an outdated report is returned as "previous", never presented as the assessment.
+   */
+  current(id: string): { active: Report | null; previous: Report | null; stale: boolean; readiness: Readiness } {
     const a = this.store.get(id);
     const latest = this.store.latestReport(id);
+    const stale = latest !== null && latest.report.based_on_revision !== a.revision;
     return {
-      report: latest?.report ?? null,
-      stale: latest !== null && latest.report.based_on_revision !== a.revision,
+      active: latest && !stale ? latest.report : null,
+      previous: latest && stale ? latest.report : null,
+      stale,
       readiness: readiness(a.model, a.questions),
     };
+  }
+
+  /**
+   * Called after every material change. If an assessment has been generated before, it is
+   * regenerated from the changed model when the gate still passes; otherwise the assessment
+   * drops back to "review" and the blockers say what is now missing.
+   */
+  refresh(id: string): { regenerated: boolean; report: Report | null; readiness: Readiness } {
+    if (this.store.reportCount(id) === 0) return { regenerated: false, report: null, readiness: this.readiness(id) };
+    const result = this.generate(id);
+    if (result.ok) return { regenerated: true, report: result.report, readiness: this.readiness(id) };
+    this.store.setStatus(id, 'review');
+    return { regenerated: false, report: null, readiness: result.readiness };
   }
 }

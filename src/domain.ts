@@ -42,16 +42,27 @@ export type FrictionCategory = keyof typeof FRICTION_CATEGORIES;
 
 // ---------------------------------------------------------------- evidence
 
-export type EvidenceKind = 'problem_statement' | 'answer' | 'correction' | 'context';
+/**
+ * problem_statement  the opening complaint
+ * answer             an answer to a discovery question
+ * correction         the user changed something Ilsa had (authoritative)
+ * confirmation       the user confirmed something Ilsa had as correct
+ * dispute            the user said a finding is wrong, and why
+ * context            extra information the user volunteered
+ */
+export type EvidenceKind = 'problem_statement' | 'answer' | 'correction' | 'confirmation' | 'dispute' | 'context';
 
-/** Something the user said. Append-only: evidence is never edited or deleted. */
+/** Something the user said or did. Append-only: evidence is never edited or deleted. */
 export interface Evidence {
   id: string;               // E1, E2, ... assigned by code
   kind: EvidenceKind;
   question_id: string | null;
+  about?: string | null;    // for review actions: the slot, step or finding it concerns
   text: string;
   created_at: string;
 }
+
+export const evidenceNumber = (id: string): number => Number(id.slice(1));
 
 /** A pointer into the evidence: which statement, and the exact words relied on. */
 export interface EvidenceRef {
@@ -79,6 +90,12 @@ export interface Fact {
   value: string | null;
   status: Certainty;
   evidence: EvidenceRef[];
+  /** Who set the current value. User-set facts are authoritative: the interpreter cannot change them. */
+  by?: 'ilsa' | 'user';
+  /** What Ilsa had before the user changed it, so the UI can show inferred vs. corrected. */
+  was?: { value: string | null; status: Certainty } | null;
+  /** The user's review action that set it. */
+  user_action?: 'corrected' | 'confirmed' | 'marked_unknown' | 'marked_absent';
 }
 
 export interface Step {
@@ -91,6 +108,8 @@ export interface Step {
   manual: boolean | null;   // done by hand (copying, typing, checking); null = not established
   decision: boolean | null; // involves a judgment call; null = not established
   evidence: EvidenceRef[];  // what the user said that established this step exists
+  added_by?: 'ilsa' | 'user';
+  summary_was?: string | null; // Ilsa's original wording, if the user corrected it
 }
 
 export const STEP_FACTS = ['owner', 'system', 'handoff_in', 'waiting_on'] as const;
@@ -136,6 +155,8 @@ export interface Finding {
   source: FindingSource;
   status: FindingStatus;
   rejection_reason: string | null;
+  /** The human review decision, if any. at_evidence = how much evidence existed when it was made. */
+  review?: { action: 'accepted' | 'disputed'; evidence_id: string; at_evidence: number } | null;
 }
 
 // ---------------------------------------------------------------- assessment

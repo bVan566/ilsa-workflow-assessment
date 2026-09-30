@@ -58,6 +58,7 @@ export class Store {
         id TEXT NOT NULL,
         kind TEXT NOT NULL,
         question_id TEXT,
+        about TEXT,
         text TEXT NOT NULL,
         created_at TEXT NOT NULL,
         PRIMARY KEY (assessment_id, id)
@@ -161,19 +162,19 @@ export class Store {
 
   // ---------------------------------------------------------------- evidence (append-only)
 
-  addEvidence(id: string, kind: EvidenceKind, text: string, questionId: string | null = null): Evidence {
+  addEvidence(id: string, kind: EvidenceKind, text: string, questionId: string | null = null, about: string | null = null): Evidence {
     this.get(id);
     const clean = requireText(text, 'evidence text', MAX_TEXT);
     const n = Number((this.db.prepare('SELECT COUNT(*) AS n FROM evidence WHERE assessment_id = ?').get(id) as { n: number }).n);
-    const ev: Evidence = { id: `E${n + 1}`, kind, question_id: questionId, text: clean, created_at: this.ts() };
-    this.db.prepare('INSERT INTO evidence (assessment_id, id, kind, question_id, text, created_at) VALUES (?, ?, ?, ?, ?, ?)')
-      .run(id, ev.id, ev.kind, ev.question_id, ev.text, ev.created_at);
+    const ev: Evidence = { id: `E${n + 1}`, kind, question_id: questionId, about, text: clean, created_at: this.ts() };
+    this.db.prepare('INSERT INTO evidence (assessment_id, id, kind, question_id, about, text, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
+      .run(id, ev.id, ev.kind, ev.question_id, ev.about ?? null, ev.text, ev.created_at);
     this.touch(id);
     return ev;
   }
 
   evidence(id: string): Evidence[] {
-    return this.db.prepare(`SELECT id, kind, question_id, text, created_at FROM evidence WHERE assessment_id = ?
+    return this.db.prepare(`SELECT id, kind, question_id, about, text, created_at FROM evidence WHERE assessment_id = ?
       ORDER BY CAST(SUBSTR(id, 2) AS INTEGER)`).all(id) as unknown as Evidence[];
   }
 
@@ -209,6 +210,11 @@ export class Store {
         .run(ev.id, id, questionId);
       return ev;
     });
+  }
+
+  /** Closes an open question that a review action already settled. */
+  closeQuestion(id: string, questionId: string): void {
+    this.db.prepare(`UPDATE questions SET status = 'skipped' WHERE assessment_id = ? AND id = ? AND status = 'open'`).run(id, questionId);
   }
 
   skipQuestion(id: string, questionId: string): void {

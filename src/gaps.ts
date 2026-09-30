@@ -48,6 +48,11 @@ export function factState(f: Fact): FactState {
   return f.evidence.length > 0 ? 'unresolved' : 'missing';
 }
 
+/** The user explicitly said nobody knows this (in an answer, or by marking it unknown in review). */
+export function userSaysUnknown(f: Fact, isDontKnow: (t: string) => boolean): boolean {
+  return f.status === 'unknown' && f.evidence.length > 0 && (f.by === 'user' || f.evidence.some((r) => isDontKnow(r.quote)));
+}
+
 function uncertaintyOf(f: Fact): number {
   return { established: 0, tentative: 0.5, unresolved: 0, missing: 1 }[factState(f)];
 }

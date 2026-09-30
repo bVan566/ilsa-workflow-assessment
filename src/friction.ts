@@ -1,9 +1,9 @@
 import {
-  FRICTION_CATEGORIES,
+  FRICTION_CATEGORIES, evidenceNumber,
   type Evidence, type EvidenceRef, type Fact, type Finding, type FindingSource, type FrictionCategory, type Model, type Step,
   type WorkflowFactField,
 } from './domain.ts';
-import { factState } from './gaps.ts';
+import { factState, userSaysUnknown } from './gaps.ts';
 import { isDontKnow, isHedged } from './language.ts';
 import { checkEvidenceRef, normalize } from './validate.ts';
 
@@ -79,7 +79,7 @@ const lvl = (f: Fact): Level => (f.status === 'inferred' ? 'tentative' : 'confir
 const weakest = (...ls: Level[]): Level => (ls.includes('tentative') ? 'tentative' : 'confirmed');
 const established = (f: Fact) => f.status === 'known' || f.status === 'inferred';
 const systemsOf = (f: Fact) => (established(f) ? f.value!.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean) : []);
-const dontKnow = (f: Fact) => factState(f) === 'unresolved' && f.evidence.some((r) => isDontKnow(r.quote));
+const dontKnow = (f: Fact) => factState(f) === 'unresolved' && userSaysUnknown(f, isDontKnow);
 /** Steps that receive work from another cited step. A single cited step counts as receiving. */
 const receiving = (steps: Step[]) => (steps.length > 1 ? steps.slice(1) : steps);
 
@@ -304,20 +304,39 @@ export function diagnose(
     if (!current || STRENGTH[v.status] > STRENGTH[current.status]) best.set(v.signature, v);
   }
 
-  const prevBySig = new Map(previous.filter((f) => f.status !== 'rejected').map((f) => [f.signature, f]));
+  const liveStatuses = new Set(['confirmed', 'tentative', 'user_accepted']);
+  const prevLive = new Map(previous.filter((f) => liveStatuses.has(f.status)).map((f) => [f.signature, f]));
+  const prevDisputed = new Map(previous.filter((f) => f.status === 'user_disputed').map((f) => [f.signature, f]));
   const findings: Finding[] = [];
+
   for (const v of best.values()) {
-    const prev = prevBySig.get(v.signature);
-    const id = prev?.id ?? nextFindingId();
-    // Human review decisions are sticky: a disputed finding is not raised again,
-    // an accepted one stays accepted while the model still supports it.
-    const status = prev && (prev.status === 'user_disputed' || prev.status === 'user_accepted') ? prev.status : v.status;
-    findings.push({ id, ...v, status });
-    if (!prev) log.push(`${id}: ${v.status} ${v.category} (${v.support})`);
+    const live = prevLive.get(v.signature);
+    const disputed = prevDisputed.get(v.signature);
+    if (!live && disputed) {
+      // Sticky dispute: the same finding is not raised again unless it now rests on evidence
+      // the user gave AFTER disputing it (the dispute's own words do not count).
+      const cutoff = disputed.review?.at_evidence ?? Infinity;
+      const fresh = v.evidence.filter((r) => evidenceNumber(r.evidence_id) > cutoff &&
+        evidence.find((e) => e.id === r.evidence_id)?.kind !== 'dispute');
+      if (fresh.length === 0) {
+        continue;
+      }
+      const id = nextFindingId();
+      findings.push({ id, ...v, review: null });
+      log.push(`${id}: ${v.status} ${v.category} raised again on new evidence ${fresh.map((r) => r.evidence_id).join(', ')} (${disputed.id} was disputed earlier)`);
+      continue;
+    }
+    const id = live?.id ?? nextFindingId();
+    // An accepted finding stays accepted while the model still supports it.
+    const accepted = live?.status === 'user_accepted';
+    findings.push({ id, ...v, status: accepted ? 'user_accepted' : v.status, review: live?.review ?? null });
+    if (!live) log.push(`${id}: ${v.status} ${v.category} (${v.support})`);
   }
-  for (const prev of prevBySig.values()) {
+  for (const prev of prevLive.values()) {
     if (!best.has(prev.signature)) log.push(`${prev.id}: ${prev.category} no longer supported by the model; removed`);
   }
+  // Disputed findings stay on record (excluded from every assessment), whether or not still detected.
+  for (const d of prevDisputed.values()) findings.push(d);
   // Keep rejected model proposals for audit (previous ones too), never as findings.
   const audit = [...previous.filter((f) => f.status === 'rejected'), ...rejectedModel.map((r) => ({ id: nextFindingId(), ...r }))];
   for (const r of rejectedModel) log.push(`rejected model finding ${r.category}: ${r.rejection_reason}`);

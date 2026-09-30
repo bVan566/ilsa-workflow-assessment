@@ -1,9 +1,9 @@
 import type { Assessment, Evidence, Question } from './domain.ts';
 import { diagnose, type FindingProposal } from './friction.ts';
-import { candidates, coverage, nextQuestion, type Candidate } from './gaps.ts';
+import { candidates, coverage, factState, nextQuestion, sequenceConfirmed, type Candidate } from './gaps.ts';
 import { HeuristicInterpreter } from './interpret/heuristic.ts';
 import type { Interpreter } from './interpret/types.ts';
-import { applyDelta } from './merge.ts';
+import { applyDelta, getFact } from './merge.ts';
 import type { Store } from './store.ts';
 
 // Discovery: the Discover -> Clarify -> Map part of the process.
@@ -55,6 +55,32 @@ export class Discovery {
     const interpretation = await this.interpretAndSave(id, evidence, question);
     this.askNext(id);
     return { state: this.state(id), interpretation };
+  }
+
+  /** Extra information the user volunteers. Interpreted like any statement; cannot override user-set facts. */
+  async addContext(id: string, text: string, about: string | null = null): Promise<{ state: DiscoveryState; interpretation: Interpretation }> {
+    const evidence = this.store.addEvidence(id, 'context', text, null, about);
+    const interpretation = await this.interpretAndSave(id, evidence, null);
+    this.refreshQuestions(id);
+    return { state: this.state(id), interpretation };
+  }
+
+  /** After a review action: close an open question it already settled, then pick the next one. */
+  refreshQuestions(id: string): void {
+    const a = this.store.get(id);
+    const open = a.questions.find((q) => q.status === 'open');
+    if (open) {
+      let settled: boolean;
+      if (open.slot === 'sequence') {
+        settled = open.intent === 'discover' ? a.model.workflow.steps.length >= 2 : sequenceConfirmed(a.model);
+      } else {
+        const f = getFact(a.model, open.slot);
+        const s = f ? factState(f) : 'established';
+        settled = open.intent === 'discover' ? s !== 'missing' : s !== 'tentative';
+      }
+      if (settled) this.store.closeQuestion(id, open.id);
+    }
+    this.askNext(id);
   }
 
   skip(id: string, questionId: string): DiscoveryState {
