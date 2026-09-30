@@ -1,10 +1,13 @@
-import { FRICTION_CATEGORIES, type Evidence, type EvidenceRef, type Fact, type Model } from './domain.ts';
+import {
+  CERTAINTIES, FRICTION_CATEGORIES, STEP_FACTS, WORKFLOW_FACTS,
+  type Evidence, type EvidenceRef, type Fact, type Model,
+} from './domain.ts';
+import { isHedged } from './language.ts';
 
 // Deterministic schema and evidence validation. Nothing enters the stored model
-// unless it passes these checks, no matter whether a person, a rule or a language
-// model produced it.
+// unless it passes these checks, whether a person, a rule or a language model produced it.
 
-/** Minimum quote length, so "the" or "yes" cannot be cited as evidence for a claim. */
+/** Minimum quote length, so a fragment like "the" or "yes" cannot be lifted out of a longer statement. */
 export const MIN_QUOTE_CHARS = 8;
 
 export function normalize(text: string): string {
@@ -22,8 +25,12 @@ export function checkEvidenceRef(ref: EvidenceRef, evidence: Evidence[]): string
   const source = evidence.find((e) => e.id === ref.evidence_id);
   if (!source) return `evidence ${ref.evidence_id} does not exist`;
   const quote = normalize(ref.quote);
-  if (quote.length < MIN_QUOTE_CHARS) return `quote "${ref.quote}" is too short to count as evidence`;
-  if (!normalize(source.text).includes(quote)) return `quote "${ref.quote}" does not appear in ${ref.evidence_id}`;
+  const whole = normalize(source.text);
+  if (quote.length === 0) return 'quote is empty';
+  // A short quote is allowed only when it is the user's entire statement (e.g. "Yes."),
+  // so fragments cannot be cherry-picked out of longer answers.
+  if (quote.length < MIN_QUOTE_CHARS && quote !== whole) return `quote "${ref.quote}" is too short to count as evidence`;
+  if (!whole.includes(quote)) return `quote "${ref.quote}" does not appear in ${ref.evidence_id}`;
   return null;
 }
 
@@ -51,15 +58,24 @@ function checkRefs(path: string, refs: unknown, evidence: Evidence[], errors: st
   });
 }
 
-function checkFact(path: string, fact: Fact, evidence: Evidence[], errors: string[]): void {
-  if (!fact || !['known', 'unknown', 'absent'].includes(fact.status)) {
-    errors.push(`${path}.status must be known, unknown or absent`);
+export function checkFact(path: string, fact: Fact, evidence: Evidence[], errors: string[]): void {
+  if (!fact || !CERTAINTIES.includes(fact.status)) {
+    errors.push(`${path}.status must be one of ${CERTAINTIES.join(', ')}`);
     return;
   }
-  if (fact.status === 'known' && !nonEmpty(fact.value)) errors.push(`${path} is known but has no value`);
-  if (fact.status === 'unknown' && fact.value !== null) errors.push(`${path} is unknown but has a value`);
-  // "known" and "absent" are both claims about the business, so both need evidence.
+  if ((fact.status === 'known' || fact.status === 'inferred') && !nonEmpty(fact.value)) {
+    errors.push(`${path} is ${fact.status} but has no value`);
+  }
+  if ((fact.status === 'unknown' || fact.status === 'absent') && fact.value !== null) {
+    errors.push(`${path} is ${fact.status} but has a value`);
+  }
+  // known, inferred and absent are all claims about the business, so all need evidence.
   checkRefs(path, fact.evidence, evidence, errors, fact.status !== 'unknown');
+  // "Known" means stated plainly. If every quote behind it is hedged, it is only inferred.
+  if (fact.status === 'known' && Array.isArray(fact.evidence) && fact.evidence.length > 0 &&
+      fact.evidence.every((r) => isHedged(r?.quote ?? ''))) {
+    errors.push(`${path} is marked known but all its evidence is hedged; it can only be inferred`);
+  }
 }
 
 /** Validates the whole versioned model against the assessment's evidence. Returns all errors found. */
@@ -69,9 +85,7 @@ export function validateModel(model: Model, evidence: Evidence[]): string[] {
   if (!wf) return ['model.workflow is missing'];
 
   if (!nonEmpty(wf.name)) errors.push('workflow.name is required');
-  checkFact('workflow.trigger', wf.trigger, evidence, errors);
-  checkFact('workflow.completion', wf.completion, evidence, errors);
-  checkFact('workflow.exceptions', wf.exceptions, evidence, errors);
+  for (const field of WORKFLOW_FACTS) checkFact(`workflow.${field}`, wf[field], evidence, errors);
 
   const stepIds = new Set<string>();
   if (!Array.isArray(wf.steps)) errors.push('workflow.steps must be an array');
@@ -81,11 +95,9 @@ export function validateModel(model: Model, evidence: Evidence[]): string[] {
     else if (stepIds.has(s.id)) errors.push(`${p}.id ${s.id} is duplicated`);
     else stepIds.add(s.id);
     if (!nonEmpty(s.summary)) errors.push(`${p}.summary is required`);
-    if (s.owner !== null && !nonEmpty(s.owner)) errors.push(`${p}.owner must be a name or null`);
-    if (s.system !== null && !nonEmpty(s.system)) errors.push(`${p}.system must be a name or null`);
-    if (s.waiting_on !== null && !nonEmpty(s.waiting_on)) errors.push(`${p}.waiting_on must be text or null`);
-    if (typeof s.manual !== 'boolean') errors.push(`${p}.manual must be true or false`);
-    if (typeof s.decision !== 'boolean') errors.push(`${p}.decision must be true or false`);
+    for (const field of STEP_FACTS) checkFact(`${p}.${field}`, s[field], evidence, errors);
+    if (s.manual !== null && typeof s.manual !== 'boolean') errors.push(`${p}.manual must be true, false or null`);
+    if (s.decision !== null && typeof s.decision !== 'boolean') errors.push(`${p}.decision must be true, false or null`);
     checkRefs(p, s.evidence, evidence, errors, true);
   }
 

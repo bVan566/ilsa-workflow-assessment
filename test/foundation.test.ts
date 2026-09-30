@@ -3,16 +3,19 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
-import { emptyFact, type Model, type Step } from '../src/domain.ts';
+import { emptyFact, emptyWorkflow, type Fact, type Model, type Step } from '../src/domain.ts';
 import { Store, NotFoundError } from '../src/store.ts';
 import { ValidationError, checkEvidenceRef, validateModel } from '../src/validate.ts';
 
 const PROBLEM = 'We keep losing new customer inquiries and I do not know why.';
 const ANSWER = 'Inquiries come in through the website form and land in the office inbox. Maria copies them into a spreadsheet.';
 
+const known = (value: string, quote: string): Fact => ({ value, status: 'known', evidence: [{ evidence_id: 'E2', quote }] });
+
 function stepFrom(id: string, quote: string, extra: Partial<Step> = {}): Step {
-  return { id, summary: 'Copy inquiry into spreadsheet', owner: 'Maria', system: 'spreadsheet', manual: true,
-    decision: false, waiting_on: null, evidence: [{ evidence_id: 'E2', quote }], ...extra };
+  return { id, summary: 'Copy inquiry into spreadsheet', owner: known('Maria', quote), system: known('spreadsheet', quote),
+    handoff_in: emptyFact(), waiting_on: emptyFact(), manual: true, decision: false,
+    evidence: [{ evidence_id: 'E2', quote }], ...extra };
 }
 
 describe('evidence references', () => {
@@ -41,8 +44,7 @@ describe('evidence references', () => {
 describe('model validation', () => {
   const evidence = [{ id: 'E2', kind: 'answer' as const, question_id: null, text: ANSWER, created_at: 't' }];
   const base = (): Model => ({
-    workflow: { name: 'New inquiry', trigger: emptyFact(), completion: emptyFact(), exceptions: emptyFact(),
-      steps: [stepFrom('S1', 'Maria copies them into a spreadsheet')] },
+    workflow: { ...emptyWorkflow('New inquiry'), steps: [stepFrom('S1', 'Maria copies them into a spreadsheet')] },
     findings: [],
   });
 
@@ -68,6 +70,32 @@ describe('model validation', () => {
     const m = base();
     m.workflow.completion = { value: null, status: 'absent', evidence: [] };
     assert.ok(validateModel(m, evidence).some((e) => /completion has no evidence/.test(e)));
+  });
+
+  it('distinguishes the four certainty states and enforces what each needs', () => {
+    const m = base();
+    m.workflow.trigger = { value: 'form', status: 'unknown', evidence: [] };
+    m.workflow.completion = { value: null, status: 'inferred', evidence: [{ evidence_id: 'E2', quote: 'Maria copies them into a spreadsheet' }] };
+    const errors = validateModel(m, evidence);
+    assert.ok(errors.some((e) => /trigger is unknown but has a value/.test(e)));
+    assert.ok(errors.some((e) => /completion is inferred but has no value/.test(e)));
+  });
+
+  it('refuses "known" when every quote behind it is hedged', () => {
+    const hedged = [{ id: 'E2', kind: 'answer' as const, question_id: null, text: 'I think Maria usually copies them into a spreadsheet.', created_at: 't' }];
+    const m = base();
+    const q = 'I think Maria usually copies them';
+    m.workflow.steps[0] = stepFrom('S1', q, { owner: { value: 'Maria', status: 'known', evidence: [{ evidence_id: 'E2', quote: q }] }, system: emptyFact() });
+    assert.ok(validateModel(m, hedged).some((e) => /all its evidence is hedged/.test(e)));
+    m.workflow.steps[0].owner.status = 'inferred';
+    assert.deepEqual(validateModel(m, hedged), []);
+  });
+
+  it('allows a short quote only when it is the whole statement', () => {
+    const ev = [{ id: 'E3', kind: 'answer' as const, question_id: 'Q2', text: 'Yes.', created_at: 't' },
+      { id: 'E4', kind: 'answer' as const, question_id: 'Q3', text: 'Yes, but only on weekdays.', created_at: 't' }];
+    assert.equal(checkEvidenceRef({ evidence_id: 'E3', quote: 'Yes.' }, ev), null);
+    assert.match(checkEvidenceRef({ evidence_id: 'E4', quote: 'Yes' }, ev) ?? '', /too short/);
   });
 
   it('rejects findings outside the taxonomy, on unknown steps, or without evidence', () => {
@@ -104,7 +132,7 @@ describe('store: persistence and revisions', () => {
   it('records answers as evidence and closes the question atomically', () => {
     const store = new Store();
     const a = store.createAssessment('New customer inquiry', PROBLEM);
-    const q = store.addQuestion(a.id, { dimension: 'trigger', text: 'What starts the process?' });
+    const q = store.addQuestion(a.id, { dimension: 'trigger', slot: 'trigger', intent: 'discover', text: 'What starts the process?' });
     const ev = store.answerQuestion(a.id, q.id, ANSWER);
     const after = store.get(a.id);
     assert.equal(ev.id, 'E2');
@@ -124,16 +152,17 @@ describe('store: persistence and revisions', () => {
   it('keeps every revision, so corrections are traceable', () => {
     const store = new Store();
     const a = store.createAssessment('New customer inquiry', PROBLEM);
-    const q = store.addQuestion(a.id, { dimension: 'steps', text: 'What happens next?' });
+    const q = store.addQuestion(a.id, { dimension: 'steps', slot: 'sequence', intent: 'discover', text: 'What happens next?' });
     store.answerQuestion(a.id, q.id, ANSWER);
     const v1: Model = { workflow: { ...a.model.workflow, steps: [stepFrom('S1', 'Maria copies them into a spreadsheet')] }, findings: [] };
     store.saveModel(a.id, v1, 'extracted from E2', 'interpreter');
     const v2: Model = structuredClone(v1);
-    v2.workflow.steps[0].owner = 'Dana';
+    v2.workflow.steps[0].owner = known('Maria copies', 'Maria copies them into a spreadsheet');
+    v2.workflow.steps[0].owner.value = 'Dana';
     store.saveModel(a.id, v2, 'user corrected owner of S1', 'user');
 
-    assert.equal(store.get(a.id).model.workflow.steps[0].owner, 'Dana');
-    assert.equal(store.getRevision(a.id, 2).workflow.steps[0].owner, 'Maria');
+    assert.equal(store.get(a.id).model.workflow.steps[0].owner.value, 'Dana');
+    assert.equal(store.getRevision(a.id, 2).workflow.steps[0].owner.value, 'Maria');
     assert.deepEqual(store.revisions(a.id).map((r) => [r.revision, r.actor]), [[1, 'system'], [2, 'interpreter'], [3, 'user']]);
   });
 
@@ -149,7 +178,7 @@ describe('store: persistence and revisions', () => {
       const path = join(dir, 'ilsa.db');
       const first = new Store(path);
       const a = first.createAssessment('New customer inquiry', PROBLEM);
-      first.addQuestion(a.id, { dimension: 'trigger', text: 'What starts the process?' });
+      first.addQuestion(a.id, { dimension: 'trigger', slot: 'trigger', intent: 'discover', text: 'What starts the process?' });
       first.db.close();
 
       const reopened = new Store(path);

@@ -62,32 +62,51 @@ export interface EvidenceRef {
 // ---------------------------------------------------------------- workflow model
 
 /**
- * A single fact about the workflow. `unknown` means "not established yet";
- * `absent` means the user told us it does not exist (e.g. "nobody closes them out"),
- * which is itself useful evidence.
+ * How certain Ilsa is about a single fact. Four states, never collapsed into each other:
+ *
+ *   known     the user stated it plainly
+ *   inferred  the user said it with a hedge ("usually", "I think", "probably"), or it was
+ *             read from indirect wording. Held as unconfirmed until the user confirms it.
+ *   absent    the user said it does not exist ("nobody closes them out"). That is
+ *             knowledge, not a gap, and is often evidence of friction.
+ *   unknown   not established. With no evidence: not asked yet. With evidence: asked,
+ *             and the answer did not establish it ("I'm not sure"). Never filled by assumption.
  */
+export type Certainty = 'known' | 'inferred' | 'absent' | 'unknown';
+export const CERTAINTIES: readonly Certainty[] = ['known', 'inferred', 'absent', 'unknown'];
+
 export interface Fact {
   value: string | null;
-  status: 'known' | 'unknown' | 'absent';
+  status: Certainty;
   evidence: EvidenceRef[];
 }
 
 export interface Step {
   id: string;               // S1, S2, ... assigned by code, never reused
   summary: string;
-  owner: string | null;     // null = not established
-  system: string | null;    // tool or channel used, null = not established
-  manual: boolean;          // done by hand (copying, typing, checking)
-  decision: boolean;        // involves a judgment call
-  waiting_on: string | null;
-  evidence: EvidenceRef[];
+  owner: Fact;              // who is responsible
+  system: Fact;             // tool or channel used
+  handoff_in: Fact;         // how the work reaches this step from the previous one
+  waiting_on: Fact;         // what this step waits for, if anything
+  manual: boolean | null;   // done by hand (copying, typing, checking); null = not established
+  decision: boolean | null; // involves a judgment call; null = not established
+  evidence: EvidenceRef[];  // what the user said that established this step exists
 }
+
+export const STEP_FACTS = ['owner', 'system', 'handoff_in', 'waiting_on'] as const;
+export type StepFactField = (typeof STEP_FACTS)[number];
+
+export const WORKFLOW_FACTS = ['sequence', 'trigger', 'completion', 'exceptions', 'decisions', 'waiting'] as const;
+export type WorkflowFactField = (typeof WORKFLOW_FACTS)[number];
 
 export interface Workflow {
   name: string;
+  sequence: Fact;           // whether the user has confirmed the list of steps is complete and in order
   trigger: Fact;
   completion: Fact;
   exceptions: Fact;
+  decisions: Fact;          // where judgment calls happen, at the workflow level
+  waiting: Fact;            // where the process waits on others, at the workflow level
   steps: Step[];            // in process order
 }
 
@@ -121,6 +140,8 @@ export type AssessmentStatus = 'discovery' | 'review' | 'assessed';
 export interface Question {
   id: string;               // Q1, Q2, ...
   dimension: Dimension;
+  slot: string;             // the exact model field it targets, e.g. "trigger" or "S2.owner"
+  intent: 'discover' | 'confirm';
   text: string;
   step_id: string | null;   // when the question is about one step
   status: 'open' | 'answered' | 'skipped';
@@ -152,5 +173,15 @@ export function emptyFact(): Fact {
 }
 
 export function emptyWorkflow(name: string): Workflow {
-  return { name, trigger: emptyFact(), completion: emptyFact(), exceptions: emptyFact(), steps: [] };
+  return {
+    name, sequence: emptyFact(), trigger: emptyFact(), completion: emptyFact(), exceptions: emptyFact(),
+    decisions: emptyFact(), waiting: emptyFact(), steps: [],
+  };
+}
+
+export function newStep(id: string, summary: string, evidence: EvidenceRef[]): Step {
+  return {
+    id, summary, evidence, manual: null, decision: null,
+    owner: emptyFact(), system: emptyFact(), handoff_in: emptyFact(), waiting_on: emptyFact(),
+  };
 }

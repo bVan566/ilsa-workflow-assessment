@@ -25,6 +25,7 @@ export interface RevisionInfo {
   revision: number;
   reason: string;
   actor: string;
+  details: string[];
   created_at: string;
 }
 
@@ -65,6 +66,8 @@ export class Store {
         assessment_id TEXT NOT NULL REFERENCES assessments(id),
         id TEXT NOT NULL,
         dimension TEXT NOT NULL,
+        slot TEXT NOT NULL,
+        intent TEXT NOT NULL,
         text TEXT NOT NULL,
         step_id TEXT,
         status TEXT NOT NULL,
@@ -78,6 +81,7 @@ export class Store {
         model_json TEXT NOT NULL,
         reason TEXT NOT NULL,
         actor TEXT NOT NULL,
+        details_json TEXT NOT NULL DEFAULT '[]',
         created_at TEXT NOT NULL,
         PRIMARY KEY (assessment_id, revision)
       );
@@ -167,21 +171,22 @@ export class Store {
 
   // ---------------------------------------------------------------- questions
 
-  addQuestion(id: string, q: { dimension: Dimension; text: string; step_id?: string | null }): Question {
+  addQuestion(id: string, q: { dimension: Dimension; slot: string; intent: Question['intent']; text: string; step_id?: string | null }): Question {
     this.get(id);
     if (!DIMENSIONS.includes(q.dimension)) throw new ValidationError([`unknown dimension "${q.dimension}"`]);
     const n = Number((this.db.prepare('SELECT COUNT(*) AS n FROM questions WHERE assessment_id = ?').get(id) as { n: number }).n);
     const question: Question = {
-      id: `Q${n + 1}`, dimension: q.dimension, text: requireText(q.text, 'question', 500),
+      id: `Q${n + 1}`, dimension: q.dimension, slot: q.slot, intent: q.intent, text: requireText(q.text, 'question', 1000),
       step_id: q.step_id ?? null, status: 'open', answer_evidence_id: null, created_at: this.ts(),
     };
-    this.db.prepare(`INSERT INTO questions (assessment_id, id, dimension, text, step_id, status, answer_evidence_id, created_at)
-      VALUES (?, ?, ?, ?, ?, 'open', NULL, ?)`).run(id, question.id, question.dimension, question.text, question.step_id, question.created_at);
+    this.db.prepare(`INSERT INTO questions (assessment_id, id, dimension, slot, intent, text, step_id, status, answer_evidence_id, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'open', NULL, ?)`)
+      .run(id, question.id, question.dimension, question.slot, question.intent, question.text, question.step_id, question.created_at);
     return question;
   }
 
   questions(id: string): Question[] {
-    return this.db.prepare(`SELECT id, dimension, text, step_id, status, answer_evidence_id, created_at FROM questions
+    return this.db.prepare(`SELECT id, dimension, slot, intent, text, step_id, status, answer_evidence_id, created_at FROM questions
       WHERE assessment_id = ? ORDER BY CAST(SUBSTR(id, 2) AS INTEGER)`).all(id) as unknown as Question[];
   }
 
@@ -211,14 +216,14 @@ export class Store {
    * Saves a new version of the model. It is validated against this assessment's
    * evidence first; an invalid model is refused and nothing is written.
    */
-  saveModel(id: string, model: Model, reason: string, actor: string): number {
+  saveModel(id: string, model: Model, reason: string, actor: string, details: string[] = []): number {
     const current = this.get(id);
     const errors = validateModel(model, current.evidence);
     if (errors.length > 0) throw new ValidationError(errors);
     const next = current.revision + 1;
     this.tx(() => {
-      this.db.prepare(`INSERT INTO revisions (assessment_id, revision, model_json, reason, actor, created_at) VALUES (?, ?, ?, ?, ?, ?)`)
-        .run(id, next, JSON.stringify(model), requireText(reason, 'reason', 300), requireText(actor, 'actor', 100), this.ts());
+      this.db.prepare(`INSERT INTO revisions (assessment_id, revision, model_json, reason, actor, details_json, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`)
+        .run(id, next, JSON.stringify(model), requireText(reason, 'reason', 300), requireText(actor, 'actor', 100), JSON.stringify(details), this.ts());
       this.db.prepare('UPDATE assessments SET revision = ?, updated_at = ? WHERE id = ?').run(next, this.ts(), id);
     });
     return next;
@@ -231,8 +236,9 @@ export class Store {
   }
 
   revisions(id: string): RevisionInfo[] {
-    return this.db.prepare('SELECT revision, reason, actor, created_at FROM revisions WHERE assessment_id = ? ORDER BY revision')
-      .all(id) as unknown as RevisionInfo[];
+    const rows = this.db.prepare('SELECT revision, reason, actor, details_json, created_at FROM revisions WHERE assessment_id = ? ORDER BY revision')
+      .all(id) as unknown as (Omit<RevisionInfo, 'details'> & { details_json: string })[];
+    return rows.map(({ details_json, ...r }) => ({ ...r, details: JSON.parse(details_json) as string[] }));
   }
 
   // ---------------------------------------------------------------- ids assigned by code
