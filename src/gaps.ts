@@ -73,11 +73,19 @@ function uncertaintyOf(f: Fact): number {
 
 const established = (f: Fact) => f.status === 'known' || f.status === 'inferred';
 
-/** Steps where responsibility changes hands (both owners known or inferred, and different). */
+/**
+ * Steps where work may change hands. Fix 5 (post-review): a handoff is only ruled out when both
+ * owners are established and the same person. Unknown owners no longer hide the handoff.
+ */
 export function handoffSteps(model: Model): Step[] {
   const steps = model.workflow.steps;
-  return steps.filter((s, i) => i > 0 && established(s.owner) && established(steps[i - 1].owner) &&
-    s.owner.value!.toLowerCase() !== steps[i - 1].owner.value!.toLowerCase());
+  return steps.filter((s, i) => {
+    if (i === 0) return false;
+    const a = steps[i - 1].owner;
+    const b = s.owner;
+    const sameKnownOwner = established(a) && established(b) && a.value!.toLowerCase() === b.value!.toLowerCase();
+    return !sameKnownOwner;
+  });
 }
 
 function quoteOf(f: Fact): string {
@@ -103,7 +111,7 @@ function textFor(kind: SlotKind, intent: Question['intent'], f: Fact, model: Mod
     case 'owner': return `Who is responsible for this step: "${step!.summary}"? If it depends, what does it depend on?`;
     case 'system': return `What tool is used for this step: "${step!.summary}"? (email, spreadsheet, CRM, paper, phone...)`;
     case 'handoff_in':
-      return `After "${prev?.summary}", how does the work reach the next step, "${step!.summary}"? What tells ${step!.owner.value} it is their turn?`;
+      return `After "${prev?.summary}", how does the work reach the next step, "${step!.summary}"? What tells ${established(step!.owner) ? step!.owner.value : 'whoever does it'} it is their turn?`;
   }
 }
 

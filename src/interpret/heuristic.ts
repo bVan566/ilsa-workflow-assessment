@@ -29,7 +29,15 @@ const NOT_NAMES = new Set(['then', 'after', 'when', 'if', 'the', 'we', 'they', '
   'well', 'honestly', 'actually', 'basically', 'yes', 'yeah', 'no', 'okay', 'ok', 'um', 'uh', 'hmm', 'there', 'those', 'these',
   'depends', 'mostly', 'probably', 'maybe', 'not', 'none', 'nothing', 'each', 'every', 'all', 'most', 'some', 'in', 'on', 'at', 'for']);
 
+/**
+ * Fix 2 (post-review): sentences whose subject is the customer describe what starts the
+ * process ("Clients call…", "Tenants text…"), not a step the business performs.
+ */
+const CUSTOMER_SUBJECT = /^\s*(then |so |and |when |once )?((a|an|the|our|new|potential|prospective|most|some) )*(customers?|clients?|patients?|tenants?|members?|parents?|people|couples|users?|visitors?|buyers?|callers?|students?|famil(y|ies)|event planners?|homeowners?|guests?|shoppers?)\b/i;
+
 const SYSTEMS: [RegExp, string][] = [
+  // Fix 4 (post-review): compound tools first, and consumed, so "paper calendar" is one tool, not two.
+  [/\bpaper (calendar|log|order book|repair orders?|forms?|notebook|notes?|records?)\b/i, 'paper or whiteboard'],
   [/\b(web ?site|web ?form|contact form|online form)\b/i, 'website form'],
   [/\b(e-?mail|inbox|gmail|outlook)\b/i, 'email'],
   [/\b(spread ?sheet|excel|google sheets?)\b/i, 'spreadsheet'],
@@ -77,7 +85,14 @@ export function extractOwner(raw: string): string | null {
 }
 
 export function extractSystems(text: string): string | null {
-  const found = SYSTEMS.filter(([re]) => re.test(text)).map(([, name]) => name);
+  const found: string[] = [];
+  let rest = text;
+  for (const [re, name] of SYSTEMS) {
+    const m = re.exec(rest);
+    if (!m) continue;
+    found.push(name);
+    rest = rest.replace(m[0], ' '); // consumed: a later, shorter pattern cannot match the same words
+  }
   return found.length ? [...new Set(found)].join(', ') : null;
 }
 
@@ -140,6 +155,14 @@ export class HeuristicInterpreter implements Interpreter {
       this.incidental(delta, 'completion', s, r, COMPLETION_ABSENT, COMPLETION);
       this.incidental(delta, 'exceptions', s, r, EXCEPTION_ABSENT, EXCEPTION);
 
+      // Fix 2: the customer's action starts the process; it is the trigger, not a step.
+      if (CUSTOMER_SUBJECT.test(s)) {
+        if (evidence.kind !== 'problem_statement' && model.workflow.trigger.status === 'unknown' &&
+            !delta.workflow_facts.some((f) => f.field === 'trigger')) {
+          delta.workflow_facts.push({ field: 'trigger', fact: stated(clip(s), r, s) });
+        }
+        continue;
+      }
       // A sentence describing the process failing is an exception, not a step.
       if (!STEP_VERB.test(s) || EXCEPTION.test(s)) continue;
       const owner = extractOwner(s);

@@ -62,6 +62,7 @@ const AMBIGUOUS = /\b(whoever|someone|somebody|anyone|one of us|we all|no specif
 const FREEFORM = /\b(email|phone|text message|paper|voicemail)\b/i;
 const INFORMAL = /\b(texts?|texted|tells?|told|verbal(ly)?|mentions?|remembers?|shouts?|sticky|word of mouth|in person|yells?)\b/i;
 const CHECKING = /\b((check|look)(s|ing|ed)? (the|in|at|through|for)|asks? (around|if|whether|who)|see if|keep an eye)\b/i;
+const WAIT_HANDLED = /\b(remind(s|ed|ers?)?|alerts?|automatic(ally)?|notif(y|ies|ied|ication)|tracks? (it|them)|follows? up automatically)\b/i;
 const LOSS = /\b(nobody follows? up|no one follows? up|falls? through|gets? (lost|forgotten|dropped)|slips? through|nothing happens|forget|forgotten)\b/i;
 const TEXT_SUPPORT: Partial<Record<FrictionCategory, RegExp>> = {
   duplicate_work: /\b(again|twice|both|also (enter|copy|type)|duplicate|double)\b/i,
@@ -129,9 +130,14 @@ function supportFor(category: FrictionCategory, steps: Step[], model: Model, quo
       return { level: 'none', why: 'no statement that failures go unhandled' };
     }
     case 'waiting_dependency': {
-      const s = steps.find((x) => established(x.waiting_on));
+      // Fix 3 (post-review): a wait the user says is already handled (a reminder, an alert,
+      // automatic tracking) is not friction.
+      const s = steps.find((x) => established(x.waiting_on) && !WAIT_HANDLED.test(x.waiting_on.value!));
       if (s) return { level: lvl(s.waiting_on), support: `${s.id} waits on: ${s.waiting_on.value}` };
-      if (established(wf.waiting)) return { level: lvl(wf.waiting), support: `waiting: ${wf.waiting.value}` };
+      if (established(wf.waiting) && !WAIT_HANDLED.test(wf.waiting.value!)) return { level: lvl(wf.waiting), support: `waiting: ${wf.waiting.value}` };
+      if (established(wf.waiting) || steps.some((x) => established(x.waiting_on))) {
+        return { level: 'none', why: 'the wait is described as already handled (reminder, alert or automatic tracking)' };
+      }
       return { level: 'none', why: 'no step or workflow fact describes waiting' };
     }
     case 'information_loss': {

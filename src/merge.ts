@@ -144,6 +144,12 @@ export function applyDelta(
       out.dropped.push(`new step "${sp.summary}": already in the model`);
       continue;
     }
+    // Fix 1 (post-review): the opening complaint describes symptoms, not the process.
+    // A step supported only by the problem statement is not a step.
+    if (sp.evidence.every((r) => evidence.find((e) => e.id === r.evidence_id)?.kind === 'problem_statement')) {
+      out.dropped.push(`new step "${sp.summary}": comes only from the problem statement, which describes symptoms, not steps`);
+      continue;
+    }
     // A restatement of an existing step ("…, like I said") is the same step: its details are
     // proposed as updates to that step instead of creating a duplicate.
     const norm = (t: string) => t.toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
