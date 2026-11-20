@@ -1,5 +1,30 @@
 # Ilsa: workflow assessment
 
+**Ilsa helps people understand how work actually happens in their business, find where it breaks, and consider practical fixes before jumping into automation.**
+
+<img src="docs/media/ilsa-guided-sample.gif" alt="Ilsa's guided sample, step by step: Ilsa asks a question, the sample answer is filled in and submitted, and the workflow map on the right fills in with steps, owners and tools" width="100%">
+
+<sub>Real capture of the guided sample running locally, no API key. Each frame is one step. Prefer video? <a href="https://youtu.be/ykFrvLkGzrQ">Watch the 90-second demo</a>.</sub>
+
+| | |
+| --- | --- |
+| **What is it?** | A working prototype of a workflow interviewer. A business owner describes a problem in plain words, like "we keep losing new customer inquiries", and Ilsa works out what's really going on. |
+| **Why build it?** | Owners usually know *something* is wrong without knowing *where*. The easy move is to buy a CRM or add an AI agent. That skips the questions that matter: who owns each step, how work gets handed over, and what "done" means. |
+| **What does it do?** | Asks one targeted question at a time, draws a map of how the work moves, flags problems only where the owner's own words support them, and then suggests the smallest practical fix. It recommends AI only where a step genuinely needs interpretation, and says why. |
+| **Can I see it?** | Yes: the walkthrough above, the [video demo](https://youtu.be/ykFrvLkGzrQ), or run it yourself in two commands (see [Run it](#run-it)). |
+| **Status** | Working prototype. Runs locally with no API key, 108 automated tests, evaluated on 20 held-out business workflows. The weak spots are listed honestly under [Known issues](#known-issues). |
+| **Learn more** | [How it works](#what-it-does) · [Architecture](#architecture) · [Evaluation](#evaluation) · [Demo script](docs/DEMO_SCRIPT.md) |
+
+<details>
+<summary><b>What the finished assessment looks like</b></summary>
+<br>
+<img src="docs/media/ilsa-assessment.png" alt="Ilsa's finished assessment for the sample plumbing business: current state, observed friction with quotes, unknowns, and recommendations that each trace back to findings" width="100%">
+</details>
+
+---
+
+## In technical terms
+
 A working prototype of an AI-assisted workflow discovery and assessment tool. A business owner describes a process in ordinary language. Ilsa asks one targeted question at a time, maps how the work actually moves, flags friction only where the owner's own words support it, and produces an assessment. The assessment keeps current state, observed friction, unknowns and recommendations separate. Every claim traces back to a quote, a human can correct anything, and recommendations stay locked until the process is understood.
 
 **No API key is needed.** The app, the sample, the tests and the evaluation all run on a deterministic, no-key interpreter. Claude is an optional add-on.
